@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 from app.core.timezone import get_current_time
@@ -24,3 +25,7 @@ class SubCategory(Base):
 
     category = relationship("Category", back_populates="subcategories")
     items = relationship("Item", back_populates="subcategory")
+
+    @hybrid_property
+    def category_public_id(self):
+        return self.category.public_id if self.category else None

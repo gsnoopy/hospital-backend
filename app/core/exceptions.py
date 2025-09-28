@@ -1,19 +1,12 @@
-"""
-Exceções customizadas para padronização do tratamento de erros na aplicação.
-Define exceções específicas para diferentes tipos de erros de negócio e validação.
-"""
-
 from typing import Dict, List, Any, Optional
 
 
+# [VALIDATION EXCEPTION]
+# [Exceção para erros de validação de dados de entrada com múltiplos campos]
+# [ENTRADA: errors - dict com erros por campo, message - mensagem principal opcional]
+# [SAIDA: exceção com estrutura de erros organizados por campo]
+# [DEPENDENCIAS: Dict, List, str, Exception]
 class ValidationException(Exception):
-    """
-    Exceção para erros de validação de dados de entrada.
-
-    Args:
-        errors: Dicionário com erros organizados por campo
-        message: Mensagem principal do erro (opcional)
-    """
 
     def __init__(self, errors: Dict[str, List[str]], message: str = "Validation failed"):
         self.errors = errors
@@ -21,15 +14,12 @@ class ValidationException(Exception):
         super().__init__(message)
 
 
+# [BUSINESS RULE EXCEPTION]
+# [Exceção para violações de regras de negócio específicas da aplicação]
+# [ENTRADA: message - descrição do erro, code - código opcional, details - detalhes opcionais]
+# [SAIDA: exceção com informações contextuais sobre a regra violada]
+# [DEPENDENCIAS: str, Optional, Dict, Any, Exception]
 class BusinessRuleException(Exception):
-    """
-    Exceção para violações de regras de negócio.
-
-    Args:
-        message: Mensagem descritiva do erro
-        code: Código do erro para identificação (opcional)
-        details: Detalhes adicionais sobre o erro (opcional)
-    """
 
     def __init__(self, message: str, code: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
         self.message = message
@@ -38,33 +28,26 @@ class BusinessRuleException(Exception):
         super().__init__(message)
 
 
+# [RESOURCE NOT FOUND EXCEPTION]
+# [Exceção para recursos não encontrados no banco de dados]
+# [ENTRADA: resource_type - tipo do recurso, identifier - identificador buscado, message - mensagem opcional]
+# [SAIDA: exceção com detalhes do recurso não encontrado]
+# [DEPENDENCIAS: str, Any, Optional, Exception]
 class ResourceNotFoundException(Exception):
-    """
-    Exceção para recursos não encontrados.
-
-    Args:
-        resource_type: Tipo do recurso (ex: "User", "Hospital")
-        identifier: Identificador usado na busca
-        message: Mensagem customizada (opcional)
-    """
 
     def __init__(self, resource_type: str, identifier: Any, message: Optional[str] = None):
         self.resource_type = resource_type
         self.identifier = identifier
-        self.message = message or f"{resource_type} not found with identifier: {identifier}"
+        self.message = message or f"{resource_type} with ID {identifier} not found"
         super().__init__(self.message)
 
 
+# [DUPLICATE RESOURCE EXCEPTION]
+# [Exceção para recursos duplicados que violam constraints únicos]
+# [ENTRADA: resource_type - tipo do recurso, field - campo duplicado, value - valor duplicado, message - mensagem opcional]
+# [SAIDA: exceção com detalhes da duplicação]
+# [DEPENDENCIAS: str, Any, Optional, Exception]
 class DuplicateResourceException(Exception):
-    """
-    Exceção para recursos duplicados.
-
-    Args:
-        resource_type: Tipo do recurso (ex: "User", "Hospital")
-        field: Campo que causou a duplicação
-        value: Valor duplicado
-        message: Mensagem customizada (opcional)
-    """
 
     def __init__(self, resource_type: str, field: str, value: Any, message: Optional[str] = None):
         self.resource_type = resource_type
@@ -74,14 +57,12 @@ class DuplicateResourceException(Exception):
         super().__init__(self.message)
 
 
+# [AUTHENTICATION EXCEPTION]
+# [Exceção para falhas de autenticação - credenciais inválidas ou token expirado]
+# [ENTRADA: message - mensagem do erro, code - código específico opcional]
+# [SAIDA: exceção com informações sobre falha de autenticação]
+# [DEPENDENCIAS: str, Optional, Exception]
 class AuthenticationException(Exception):
-    """
-    Exceção para falhas de autenticação.
-
-    Args:
-        message: Mensagem do erro de autenticação
-        code: Código específico do erro (opcional)
-    """
 
     def __init__(self, message: str = "Authentication failed", code: Optional[str] = None):
         self.message = message
@@ -89,14 +70,12 @@ class AuthenticationException(Exception):
         super().__init__(message)
 
 
+# [AUTHORIZATION EXCEPTION]
+# [Exceção para falhas de autorização - usuário sem permissões necessárias]
+# [ENTRADA: message - mensagem do erro, required_permission - permissão necessária opcional]
+# [SAIDA: exceção com informações sobre falta de permissão]
+# [DEPENDENCIAS: str, Optional, Exception]
 class AuthorizationException(Exception):
-    """
-    Exceção para falhas de autorização.
-
-    Args:
-        message: Mensagem do erro de autorização
-        required_permission: Permissão necessária (opcional)
-    """
 
     def __init__(self, message: str = "Insufficient permissions", required_permission: Optional[str] = None):
         self.message = message
@@ -104,14 +83,12 @@ class AuthorizationException(Exception):
         super().__init__(message)
 
 
+# [DATABASE EXCEPTION]
+# [Exceção para erros de banco de dados que devem ser expostos ao usuário]
+# [ENTRADA: message - mensagem amigável, original_error - erro original opcional para logs]
+# [SAIDA: exceção com contexto de erro de banco de dados]
+# [DEPENDENCIAS: str, Optional, Exception]
 class DatabaseException(Exception):
-    """
-    Exceção para erros de banco de dados que devem ser expostos ao usuário.
-
-    Args:
-        message: Mensagem amigável ao usuário
-        original_error: Erro original do banco (opcional, para logs)
-    """
 
     def __init__(self, message: str = "Database operation failed", original_error: Optional[Exception] = None):
         self.message = message

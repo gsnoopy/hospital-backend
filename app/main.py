@@ -6,6 +6,9 @@ from app.routes.role_routes import router as role_router
 from app.routes.hospital_routes import router as hospital_router
 from app.routes.job_title_routes import router as job_title_router
 from app.routes.health_routes import router as health_router
+from app.routes.category_routes import router as category_router
+from app.routes.subcategory_routes import router as subcategory_router
+from app.routes.catalog_routes import router as catalog_router
 from app.core.database import engine, Base
 from app.security import rate_limiter
 from app.core.config import settings
@@ -32,7 +35,7 @@ rate_limiter.initialize(settings.redis_url)
 # [SAIDA: FastAPI - instância da aplicação web]
 # [DEPENDENCIAS: FastAPI]
 app = FastAPI(
-    title="Hoispital Backend API",
+    title="Hospital Backend API",
     description="FastAPI backend with JWT authentication and PostgreSQL",
     version="1.0.0"
 )
@@ -59,6 +62,7 @@ app.add_middleware(
 # [SAIDA: None - registra middleware na aplicação]
 # [DEPENDENCIAS: app, error_handler_middleware]
 app.middleware("http")(error_handler_middleware)
+
 # [RATE LIMIT MIDDLEWARE]
 # [Adiciona middleware global para rate limiting HTTP]
 # [ENTRADA: rate_limit_middleware - função middleware]
@@ -78,6 +82,9 @@ app.include_router(role_router)
 app.include_router(hospital_router)
 app.include_router(job_title_router)
 app.include_router(health_router)
+app.include_router(category_router)
+app.include_router(subcategory_router)
+app.include_router(catalog_router)
 
 # [READ ROOT]
 # [Endpoint GET raiz que retorna mensagem de status da API]

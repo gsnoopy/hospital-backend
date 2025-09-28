@@ -1,8 +1,3 @@
-"""
-Sistema de seeds para dados iniciais do banco de dados.
-Contém funções para inserir dados padrão necessários para o funcionamento da aplicação.
-"""
-
 from datetime import datetime
 from sqlalchemy import text
 import bcrypt
@@ -10,21 +5,13 @@ from app.core.config import settings
 from uuid_utils import uuid7
 
 
+# [ADD DEFAULT DATA]
+# [Adiciona dados padrão necessários para funcionamento da aplicação quando tabelas são criadas]
+# [ENTRADA: connection - conexão ativa com banco de dados]
+# [SAIDA: None - insere role, hospital, job_title e usuário desenvolvedor padrão]
+# [DEPENDENCIAS: datetime, text, bcrypt, settings, uuid7]
 def add_default_data(connection):
-    """
-    Adiciona dados padrão (role, hospital, job_title, usuário desenvolvedor) quando tabelas são criadas do zero.
 
-    Args:
-        connection: conexão com banco de dados ativa
-
-    Returns:
-        None - insere dados padrão nas tabelas roles, hospitals, job_titles e users
-
-    Dependencies:
-        datetime, text, bcrypt, settings, uuid7
-    """
-
-    # Check if tables exist before trying to insert data
     try:
         connection.execute(text("SELECT 1 FROM roles LIMIT 1"))
         connection.execute(text("SELECT 1 FROM hospitals LIMIT 1"))
@@ -39,7 +26,6 @@ def add_default_data(connection):
 
     now = datetime.now()
 
-    # Create default role
     try:
         result = connection.execute(text("SELECT COUNT(*) FROM roles WHERE name = 'Desenvolvedor'")).scalar()
         if result == 0:
@@ -52,7 +38,6 @@ def add_default_data(connection):
         print(f"Erro ao criar role: {e}")
         return
 
-    # Create default hospital
     try:
         result = connection.execute(text("SELECT COUNT(*) FROM hospitals WHERE name = 'Hospital Padrão'")).scalar()
         if result == 0:
@@ -65,7 +50,6 @@ def add_default_data(connection):
         print(f"Erro ao criar hospital: {e}")
         return
 
-    # Create default job title
     try:
         result = connection.execute(text("SELECT COUNT(*) FROM job_titles WHERE title = 'Desenvolvedor Full Stack'")).scalar()
         if result == 0:
@@ -78,12 +62,10 @@ def add_default_data(connection):
         print(f"Erro ao criar cargo: {e}")
         return
 
-    # Get IDs for relationships
     role_id = connection.execute(text("SELECT id FROM roles WHERE name = 'Desenvolvedor'")).scalar()
     hospital_id = connection.execute(text("SELECT id FROM hospitals WHERE name = 'Hospital Padrão'")).scalar()
     job_title_id = connection.execute(text("SELECT id FROM job_titles WHERE title = 'Desenvolvedor Full Stack'")).scalar()
 
-    # Create default user
     try:
         result = connection.execute(text("SELECT COUNT(*) FROM users WHERE email = :email"), {"email": dev_email}).scalar()
         if result > 0:
@@ -110,8 +92,6 @@ def add_default_data(connection):
             "now1": now,
             "now2": now
         })
-        print(f"📧 Email: {dev_email}")
-        print(f"🔐 Senha: {dev_password}")
-        print("✅ Dados padrão criados com sucesso!")
+
     except Exception as e:
         print(f"Erro ao criar usuário desenvolvedor: {e}")
