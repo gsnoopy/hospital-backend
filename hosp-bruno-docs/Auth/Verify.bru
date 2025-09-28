@@ -1,0 +1,22 @@
+meta {
+  name: Verify
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:8000/auth/verify
+  body: none
+  auth: inherit
+}
+
+body:json {
+    {
+        "email": "dev@test.com",
+        "password": "dev123"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Refresh
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8000/auth/refresh
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZXZAdGVzdC5jb20iLCJ1c2VyX2lkIjoxLCJleHAiOjE3NjAzOTIzNjgsInR5cGUiOiJyZWZyZXNoIn0.szPHMOuF-tLqYF8xzt6bXSxpVwU4BUl8vHEyYXgCPIU"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

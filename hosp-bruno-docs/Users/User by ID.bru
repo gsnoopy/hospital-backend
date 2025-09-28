@@ -1,0 +1,31 @@
+meta {
+  name: User by ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/users/0199452b-203f-7a23-9306-6c5587197720
+  body: none
+  auth: inherit
+}
+
+body:json {
+  
+    {
+        "nationality": "Brasileira",
+        "document_type": "CPF",
+        "document": "123.456.789-00",
+        "name": "João Silva",
+        "email": "joao@email.com",
+        "phone": "(12) 99999-9999",
+        "password": "Senha123!",
+        "role_id": "0199451e-3b16-7073-8ec2-f5defdc1f731",
+        "job_title_id": "01994523-ca48-7960-80fc-309c1fe5aad6",
+        "hospital_id": "01994516-2c4f-72e0-a4b7-5af0d8ec6d93"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

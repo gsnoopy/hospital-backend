@@ -1,0 +1,23 @@
+meta {
+  name: Job Title
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/job-titles/
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "title": "Enfermeiro",
+        "department": "Enfermaria",
+        "seniority_level": "I"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

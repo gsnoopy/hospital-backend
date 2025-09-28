@@ -1,0 +1,21 @@
+meta {
+  name: Update Job Title
+  type: http
+  seq: 7
+}
+
+put {
+  url: http://127.0.0.1:8000/job-titles/01994523-ca48-7960-80fc-309c1fe5aad6
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "title": "Enfermeira(o)"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

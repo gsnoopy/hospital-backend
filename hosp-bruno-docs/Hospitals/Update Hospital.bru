@@ -1,0 +1,21 @@
+meta {
+  name: Update Hospital
+  type: http
+  seq: 7
+}
+
+put {
+  url: http://127.0.0.1:8000/hospitals/01994516-2c4f-72e0-a4b7-5af0d8ec6d93
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "name": "Hospital São Mateus"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,22 @@
+meta {
+  name: User Job Title
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://127.0.0.1:8000/users/0199452b-203f-7a23-9306-6c5587197720
+  body: json
+  auth: inherit
+}
+
+body:json {
+  
+    {
+        "job_title_id": "01994509-a463-7360-8f1d-6fc066dd3150"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

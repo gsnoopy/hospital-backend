@@ -1,0 +1,21 @@
+meta {
+  name: Update Role
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://127.0.0.1:8000/roles/0199451e-3b16-7073-8ec2-f5defdc1f731
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "description": "Responsável por editar licitações e associar avaliadores técnicos"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

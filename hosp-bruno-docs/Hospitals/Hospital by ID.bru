@@ -1,0 +1,27 @@
+meta {
+  name: Hospital by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://127.0.0.1:8000/hospitals/01994516-2c4f-72e0-a4b7-5af0d8ec6d93
+  body: none
+  auth: inherit
+}
+
+body:json {
+    {
+        "name": "Hospital São Lucas",
+        "nationality": "Brasileira",
+        "document_type": "CNPJ",
+        "document": "12.345.678/0001-90",
+        "email": "contato@saolucas.com",
+        "phone": "(11) 3333-4444",
+        "city": "São Paulo"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

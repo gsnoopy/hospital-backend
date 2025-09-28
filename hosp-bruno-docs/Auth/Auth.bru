@@ -1,0 +1,22 @@
+meta {
+  name: Auth
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/auth/
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "email": "dev@test.com",
+        "password": "dev123"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

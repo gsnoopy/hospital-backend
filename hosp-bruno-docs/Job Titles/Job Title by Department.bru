@@ -1,0 +1,23 @@
+meta {
+  name: Job Title by Department
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://127.0.0.1:8000/job-titles/department/Enfermaria
+  body: none
+  auth: inherit
+}
+
+body:json {
+    {
+        "title": "Enfermeiro",
+        "department": "Enfermaria",
+        "seniority_level": "I"
+    }
+}
+
+settings {
+  encodeUrl: true
+}
