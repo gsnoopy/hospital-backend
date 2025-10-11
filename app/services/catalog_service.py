@@ -1,14 +1,10 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from app.repositories.catalog_repository import CatalogRepository
 from app.schemas.catalog import CatalogCreate, CatalogUpdate
 from app.models.catalog import Catalog
 from app.validators.catalog_validator import CatalogValidator
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.core.exceptions import (
-    ValidationException,
-    DuplicateResourceException,
-    ResourceNotFoundException
-)
 from typing import Optional
 from uuid import UUID
 
@@ -38,11 +34,30 @@ class CatalogService:
         validation_result = self.catalog_validator.validate(catalog_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
-            raise ValidationException(errors)
+            error_messages = []
+            for field, messages in errors.items():
+                for msg in messages:
+                    error_messages.append(f"{field}: {msg}")
+
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": f"Validation error: {'; '.join(error_messages)}",
+                    "status_code": 422
+                }
+            )
 
         # Check for unique constraints
         if self.catalog_repository.get_by_name(catalog_data.name):
-            raise DuplicateResourceException("Catalog", "name", catalog_data.name)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Catalog with name '{catalog_data.name}' already exists",
+                    "status_code": 409
+                }
+            )
 
         catalog = self.catalog_repository.create(catalog_data)
         return catalog
@@ -55,7 +70,14 @@ class CatalogService:
     def get_catalog_by_public_id(self, public_id: UUID) -> Catalog:
         catalog = self.catalog_repository.get_by_public_id(public_id)
         if not catalog:
-            raise ResourceNotFoundException("Catalog", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Catalog with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
         return catalog
 
     # [GET CATALOG BY NAME]
@@ -113,13 +135,27 @@ class CatalogService:
     def update_catalog(self, public_id: UUID, catalog_data: CatalogUpdate) -> Catalog:
         catalog = self.catalog_repository.get_by_public_id(public_id)
         if not catalog:
-            raise ResourceNotFoundException("Catalog", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Catalog with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         # Check for conflicts if name is being updated
         if catalog_data.name and catalog_data.name != catalog.name:
             existing_catalog = self.catalog_repository.get_by_name(catalog_data.name)
             if existing_catalog:
-                raise DuplicateResourceException("Catalog", "name", catalog_data.name)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Catalog with name '{catalog_data.name}' already exists",
+                        "status_code": 409
+                    }
+                )
 
         return self.catalog_repository.update(catalog, catalog_data)
 
@@ -131,6 +167,13 @@ class CatalogService:
     def delete_catalog(self, public_id: UUID) -> None:
         catalog = self.catalog_repository.get_by_public_id(public_id)
         if not catalog:
-            raise ResourceNotFoundException("Catalog", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Catalog with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         self.catalog_repository.delete(catalog)

@@ -22,4 +22,3 @@ class Category(Base):
     updated_at = Column(DateTime, default=get_current_time, onupdate=get_current_time)
 
     subcategories = relationship("SubCategory", back_populates="category", cascade="all, delete-orphan")
-    items = relationship("Item", back_populates="category")

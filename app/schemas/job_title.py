@@ -5,13 +5,11 @@ from uuid import UUID
 
 # [JOB TITLE BASE]
 # [Schema base Pydantic com campos comuns para cargo - usado como base para outros schemas]
-# [ENTRADA: title, department, seniority_level]
+# [ENTRADA: title]
 # [SAIDA: instância JobTitleBase validada]
 # [DEPENDENCIAS: BaseModel]
 class JobTitleBase(BaseModel):
     title: str
-    department: str
-    seniority_level: str
 
 
 # [JOB TITLE CREATE]
@@ -30,19 +28,15 @@ class JobTitleCreate(JobTitleBase):
 # [DEPENDENCIAS: BaseModel, Optional]
 class JobTitleUpdate(BaseModel):
     title: Optional[str] = None
-    department: Optional[str] = None
-    seniority_level: Optional[str] = None
 
 
 # [JOB TITLE RESPONSE]
 # [Schema Pydantic para resposta de cargo - inclui campos de auditoria e public_id]
-# [ENTRADA: title, department, seniority_level, public_id, created_at, updated_at]
+# [ENTRADA: title, public_id, created_at, updated_at]
 # [SAIDA: instância JobTitleResponse para resposta da API]
 # [DEPENDENCIAS: BaseModel, datetime, UUID]
 class JobTitleResponse(BaseModel):
     title: str
-    department: str
-    seniority_level: str
     public_id: UUID
     created_at: datetime
     updated_at: datetime

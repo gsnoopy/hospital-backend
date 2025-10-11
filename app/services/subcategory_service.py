@@ -1,15 +1,11 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from app.repositories.subcategory_repository import SubCategoryRepository
 from app.repositories.category_repository import CategoryRepository
 from app.schemas.subcategory import SubCategoryCreate, SubCategoryUpdate, SubCategoryResponse
 from app.models.subcategories import SubCategory
 from app.validators.subcategory_validator import SubCategoryValidator
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.core.exceptions import (
-    ValidationException,
-    DuplicateResourceException,
-    ResourceNotFoundException
-)
 from typing import Optional
 from uuid import UUID
 
@@ -40,16 +36,42 @@ class SubCategoryService:
         validation_result = self.subcategory_validator.validate(subcategory_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
-            raise ValidationException(errors)
+            error_messages = []
+            for field, messages in errors.items():
+                for msg in messages:
+                    error_messages.append(f"{field}: {msg}")
+
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": f"Validation error: {'; '.join(error_messages)}",
+                    "status_code": 422
+                }
+            )
 
         # Check if category exists
         category = self.category_repository.get_by_public_id(subcategory_data.category_id)
         if not category:
-            raise ResourceNotFoundException("Category", str(subcategory_data.category_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Category with ID '{subcategory_data.category_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         # Check for unique constraints
         if self.subcategory_repository.get_by_name(subcategory_data.name):
-            raise DuplicateResourceException("SubCategory", "name", subcategory_data.name)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"SubCategory with name '{subcategory_data.name}' already exists",
+                    "status_code": 409
+                }
+            )
 
         subcategory = self.subcategory_repository.create(subcategory_data, category.id)
         return subcategory
@@ -62,7 +84,14 @@ class SubCategoryService:
     def get_subcategory_by_public_id(self, public_id: UUID) -> SubCategory:
         subcategory = self.subcategory_repository.get_by_public_id(public_id)
         if not subcategory:
-            raise ResourceNotFoundException("SubCategory", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"SubCategory with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
         return subcategory
 
     # [GET SUBCATEGORY BY NAME]
@@ -81,7 +110,14 @@ class SubCategoryService:
     def get_subcategories_by_category(self, category_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[SubCategory]:
         category = self.category_repository.get_by_public_id(category_public_id)
         if not category:
-            raise ResourceNotFoundException("Category", str(category_public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Category with ID '{category_public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         subcategories = self.subcategory_repository.get_by_category(
             category_id=category.id,
@@ -124,7 +160,14 @@ class SubCategoryService:
     def update_subcategory(self, public_id: UUID, subcategory_data: SubCategoryUpdate) -> SubCategory:
         subcategory = self.subcategory_repository.get_by_public_id(public_id)
         if not subcategory:
-            raise ResourceNotFoundException("SubCategory", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"SubCategory with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         category_internal_id = None
 
@@ -132,14 +175,28 @@ class SubCategoryService:
         if subcategory_data.category_id:
             category = self.category_repository.get_by_public_id(subcategory_data.category_id)
             if not category:
-                raise ResourceNotFoundException("Category", str(subcategory_data.category_id))
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"Category with ID '{subcategory_data.category_id}' not found",
+                        "status_code": 404
+                    }
+                )
             category_internal_id = category.id
 
         # Check for conflicts if name is being updated
         if subcategory_data.name and subcategory_data.name != subcategory.name:
             existing_subcategory = self.subcategory_repository.get_by_name(subcategory_data.name)
             if existing_subcategory:
-                raise DuplicateResourceException("SubCategory", "name", subcategory_data.name)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"SubCategory with name '{subcategory_data.name}' already exists",
+                        "status_code": 409
+                    }
+                )
 
         return self.subcategory_repository.update(subcategory, subcategory_data, category_internal_id)
 
@@ -151,6 +208,13 @@ class SubCategoryService:
     def delete_subcategory(self, public_id: UUID) -> None:
         subcategory = self.subcategory_repository.get_by_public_id(public_id)
         if not subcategory:
-            raise ResourceNotFoundException("SubCategory", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"SubCategory with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         self.subcategory_repository.delete(subcategory)

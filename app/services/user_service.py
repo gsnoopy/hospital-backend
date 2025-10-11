@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
+from fastapi import HTTPException
 from app.repositories.user_repository import UserRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.job_title_repository import JobTitleRepository
@@ -8,11 +9,6 @@ from app.models.user import User
 from app.auth import hash_password
 from app.validators.user_validator import UserValidator
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.core.exceptions import (
-    ValidationException,
-    ResourceNotFoundException,
-    DuplicateResourceException
-)
 from typing import Optional
 from uuid import UUID
 
@@ -45,46 +41,100 @@ class UserService:
         validation_result = self.user_validator.validate(user_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
-            raise ValidationException(errors)
-        
+            error_messages = []
+            for field, messages in errors.items():
+                for msg in messages:
+                    error_messages.append(f"{field}: {msg}")
+
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": f"Validation error: {'; '.join(error_messages)}",
+                    "status_code": 422
+                }
+            )
+
         # Check for unique constraints
         if self.user_repository.get_by_email(user_data.email):
-            raise DuplicateResourceException("User", "email", user_data.email)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"User with email '{user_data.email}' already exists",
+                    "status_code": 409
+                }
+            )
 
         if self.user_repository.get_by_document(user_data.document):
-            raise DuplicateResourceException("User", "document", user_data.document)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"User with document '{user_data.document}' already exists",
+                    "status_code": 409
+                }
+            )
 
         if self.user_repository.get_by_phone(user_data.phone):
-            raise DuplicateResourceException("User", "phone", user_data.phone)
-        
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"User with phone '{user_data.phone}' already exists",
+                    "status_code": 409
+                }
+            )
+
         # Resolve foreign key relationships
         role = self.role_repository.get_by_public_id(user_data.role_id)
         if not role:
-            raise ResourceNotFoundException("Role", user_data.role_id)
-        
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Role with ID '{user_data.role_id}' not found",
+                    "status_code": 404
+                }
+            )
+
         job_title_internal_id = None
         if user_data.job_title_id:
             job_title = self.job_title_repository.get_by_public_id(user_data.job_title_id)
             if not job_title:
-                raise ResourceNotFoundException("JobTitle", user_data.job_title_id)
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"JobTitle with ID '{user_data.job_title_id}' not found",
+                        "status_code": 404
+                    }
+                )
             job_title_internal_id = job_title.id
-        
+
         hospital_internal_id = None
         if user_data.hospital_id:
             hospital = self.hospital_repository.get_by_public_id(user_data.hospital_id)
             if not hospital:
-                raise ResourceNotFoundException("Hospital", user_data.hospital_id)
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"Hospital with ID '{user_data.hospital_id}' not found",
+                        "status_code": 404
+                    }
+                )
             hospital_internal_id = hospital.id
 
         hashed_password = hash_password(user_data.password)
         user = self.user_repository.create(
-            user_data, 
-            hashed_password, 
+            user_data,
+            hashed_password,
             role.id,
             job_title_internal_id,
             hospital_internal_id
         )
-        
+
         return user
 
     # [GET USER BY PUBLIC ID]
@@ -139,7 +189,14 @@ class UserService:
     def get_users_by_role(self, role_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[User]:
         role = self.role_repository.get_by_public_id(role_public_id)
         if not role:
-            raise ResourceNotFoundException("Role", role_public_id)
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Role with ID '{role_public_id}' not found",
+                    "status_code": 404
+                }
+            )
         
         users = self.user_repository.get_by_role_id(
             role_id=role.id,
@@ -163,7 +220,14 @@ class UserService:
     def get_users_by_job_title(self, job_title_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[User]:
         job_title = self.job_title_repository.get_by_public_id(job_title_public_id)
         if not job_title:
-            raise ResourceNotFoundException("JobTitle", job_title_public_id)
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"JobTitle with ID '{job_title_public_id}' not found",
+                    "status_code": 404
+                }
+            )
         
         users = self.user_repository.get_by_job_title_id(
             job_title_id=job_title.id,
@@ -187,7 +251,14 @@ class UserService:
     def get_users_by_hospital(self, hospital_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[User]:
         hospital = self.hospital_repository.get_by_public_id(hospital_public_id)
         if not hospital:
-            raise ResourceNotFoundException("Hospital", hospital_public_id)
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Hospital with ID '{hospital_public_id}' not found",
+                    "status_code": 404
+                }
+            )
         
         users = self.user_repository.get_by_hospital_id(
             hospital_id=hospital.id,
@@ -236,38 +307,80 @@ class UserService:
         if user_data.email and user_data.email != user.email:
             existing_user = self.user_repository.get_by_email(user_data.email)
             if existing_user:
-                raise DuplicateResourceException("User", "email", user_data.email)
-        
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"User with email '{user_data.email}' already exists",
+                        "status_code": 409
+                    }
+                )
+
         if user_data.document and user_data.document != user.document:
             existing_user = self.user_repository.get_by_document(user_data.document)
             if existing_user:
-                raise DuplicateResourceException("User", "document", user_data.document)
-        
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"User with document '{user_data.document}' already exists",
+                        "status_code": 409
+                    }
+                )
+
         if user_data.phone and user_data.phone != user.phone:
             existing_user = self.user_repository.get_by_phone(user_data.phone)
             if existing_user:
-                raise DuplicateResourceException("User", "phone", user_data.phone)
-        
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"User with phone '{user_data.phone}' already exists",
+                        "status_code": 409
+                    }
+                )
+
         # Resolve foreign key relationships
         role_internal_id = None
         if user_data.role_id:
             role = self.role_repository.get_by_public_id(user_data.role_id)
             if not role:
-                raise ResourceNotFoundException("Role", user_data.role_id)
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"Role with ID '{user_data.role_id}' not found",
+                        "status_code": 404
+                    }
+                )
             role_internal_id = role.id
-        
+
         job_title_internal_id = None
         if user_data.job_title_id:
             job_title = self.job_title_repository.get_by_public_id(user_data.job_title_id)
             if not job_title:
-                raise ResourceNotFoundException("JobTitle", user_data.job_title_id)
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"JobTitle with ID '{user_data.job_title_id}' not found",
+                        "status_code": 404
+                    }
+                )
             job_title_internal_id = job_title.id
-        
+
         hospital_internal_id = None
         if user_data.hospital_id:
             hospital = self.hospital_repository.get_by_public_id(user_data.hospital_id)
             if not hospital:
-                raise ResourceNotFoundException("Hospital", user_data.hospital_id)
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"Hospital with ID '{user_data.hospital_id}' not found",
+                        "status_code": 404
+                    }
+                )
             hospital_internal_id = hospital.id
         
         return self.user_repository.update(

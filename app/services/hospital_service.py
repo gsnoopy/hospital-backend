@@ -1,13 +1,10 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from app.repositories.hospital_repository import HospitalRepository
 from app.schemas.hospital import HospitalCreate, HospitalUpdate
 from app.models.hospital import Hospital
 from app.validators.hospital_validator import HospitalValidator
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.core.exceptions import (
-    ValidationException,
-    DuplicateResourceException
-)
 from typing import Optional
 from uuid import UUID
 
@@ -37,20 +34,60 @@ class HospitalService:
         validation_result = self.hospital_validator.validate(hospital_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
-            raise ValidationException(errors)
-        
+            error_messages = []
+            for field, messages in errors.items():
+                for msg in messages:
+                    error_messages.append(f"{field}: {msg}")
+
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": f"Validation error: {'; '.join(error_messages)}",
+                    "status_code": 422
+                }
+            )
+
         # Check for unique constraints
         if self.hospital_repository.get_by_name(hospital_data.name):
-            raise DuplicateResourceException("Hospital", "name", hospital_data.name)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Hospital with name '{hospital_data.name}' already exists",
+                    "status_code": 409
+                }
+            )
 
         if self.hospital_repository.get_by_document(hospital_data.document):
-            raise DuplicateResourceException("Hospital", "document", hospital_data.document)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Hospital with document '{hospital_data.document}' already exists",
+                    "status_code": 409
+                }
+            )
 
         if self.hospital_repository.get_by_email(hospital_data.email):
-            raise DuplicateResourceException("Hospital", "email", hospital_data.email)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Hospital with email '{hospital_data.email}' already exists",
+                    "status_code": 409
+                }
+            )
 
         if self.hospital_repository.get_by_phone(hospital_data.phone):
-            raise DuplicateResourceException("Hospital", "phone", hospital_data.phone)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Hospital with phone '{hospital_data.phone}' already exists",
+                    "status_code": 409
+                }
+            )
 
         hospital = self.hospital_repository.create(hospital_data)
         return hospital
@@ -152,22 +189,50 @@ class HospitalService:
         if hospital_data.name and hospital_data.name != hospital.name:
             existing_hospital = self.hospital_repository.get_by_name(hospital_data.name)
             if existing_hospital:
-                raise DuplicateResourceException("Hospital", "name", hospital_data.name)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Hospital with name '{hospital_data.name}' already exists",
+                        "status_code": 409
+                    }
+                )
 
         if hospital_data.document and hospital_data.document != hospital.document:
             existing_hospital = self.hospital_repository.get_by_document(hospital_data.document)
             if existing_hospital:
-                raise DuplicateResourceException("Hospital", "document", hospital_data.document)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Hospital with document '{hospital_data.document}' already exists",
+                        "status_code": 409
+                    }
+                )
 
         if hospital_data.email and hospital_data.email != hospital.email:
             existing_hospital = self.hospital_repository.get_by_email(hospital_data.email)
             if existing_hospital:
-                raise DuplicateResourceException("Hospital", "email", hospital_data.email)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Hospital with email '{hospital_data.email}' already exists",
+                        "status_code": 409
+                    }
+                )
 
         if hospital_data.phone and hospital_data.phone != hospital.phone:
             existing_hospital = self.hospital_repository.get_by_phone(hospital_data.phone)
             if existing_hospital:
-                raise DuplicateResourceException("Hospital", "phone", hospital_data.phone)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Hospital with phone '{hospital_data.phone}' already exists",
+                        "status_code": 409
+                    }
+                )
         
         return self.hospital_repository.update(hospital, hospital_data)
 

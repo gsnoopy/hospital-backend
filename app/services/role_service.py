@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from app.repositories.role_repository import RoleRepository
 from app.schemas.role import RoleCreate, RoleUpdate
 from app.models.role import Role
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.core.exceptions import DuplicateResourceException
 from typing import Optional
 from uuid import UUID
 
@@ -30,7 +30,14 @@ class RoleService:
     # [DEPENDENCIAS: self.role_repository, UserAlreadyExistsException]
     def create_role(self, role_data: RoleCreate) -> Role:
         if self.role_repository.get_by_name(role_data.name):
-            raise DuplicateResourceException("Role", "name", role_data.name)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Role with name '{role_data.name}' already exists",
+                    "status_code": 409
+                }
+            )
 
         role = self.role_repository.create(role_data)
         return role
@@ -84,7 +91,14 @@ class RoleService:
         if role_data.name and role_data.name != role.name:
             existing_role = self.role_repository.get_by_name(role_data.name)
             if existing_role:
-                raise DuplicateResourceException("Role", "name", role_data.name)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Role with name '{role_data.name}' already exists",
+                        "status_code": 409
+                    }
+                )
         
         # Update fields
         update_data = role_data.model_dump(exclude_unset=True)

@@ -27,8 +27,6 @@ class JobTitleRepository:
     def create(self, job_title_data: JobTitleCreate) -> JobTitle:
         db_job_title = JobTitle(
             title=job_title_data.title,
-            department=job_title_data.department,
-            seniority_level=job_title_data.seniority_level,
         )
         self.db.add(db_job_title)
         self.db.commit()
@@ -58,22 +56,6 @@ class JobTitleRepository:
     # [DEPENDENCIAS: self.db, JobTitle]
     def get_by_title(self, title: str) -> Optional[JobTitle]:
         return self.db.query(JobTitle).filter(JobTitle.title == title).first()
-
-    # [GET JOB TITLES BY DEPARTMENT]
-    # [Busca cargos pelo departamento]
-    # [ENTRADA: department - departamento dos cargos, skip - registros a pular, limit - limite]
-    # [SAIDA: list[JobTitle] - lista de cargos do departamento]
-    # [DEPENDENCIAS: self.db, JobTitle]
-    def get_by_department(self, department: str, skip: int = 0, limit: int = 100) -> list[JobTitle]:
-        return self.db.query(JobTitle).filter(JobTitle.department == department).offset(skip).limit(limit).all()
-
-    # [GET JOB TITLES BY SENIORITY LEVEL]
-    # [Busca cargos pelo nível de senioridade]
-    # [ENTRADA: seniority_level - nível de senioridade, skip - registros a pular, limit - limite]
-    # [SAIDA: list[JobTitle] - lista de cargos do nível]
-    # [DEPENDENCIAS: self.db, JobTitle]
-    def get_by_seniority_level(self, seniority_level: str, skip: int = 0, limit: int = 100) -> list[JobTitle]:
-        return self.db.query(JobTitle).filter(JobTitle.seniority_level == seniority_level).offset(skip).limit(limit).all()
 
     # [GET ALL JOB TITLES]
     # [Busca todos os cargos com paginação]

@@ -94,42 +94,6 @@ def get_job_title_by_title(
     return job_title
 
 
-# [GET JOB TITLES BY DEPARTMENT]
-# [Endpoint GET para buscar cargos por departamento - requer autenticação]
-# [ENTRADA: department - departamento dos cargos, page - número da página, size - itens por página, db - sessão do banco, current_user - usuário autenticado]
-# [SAIDA: PaginatedResponse[JobTitleResponse] - lista paginada de cargos do departamento]
-# [DEPENDENCIAS: JobTitleService, PaginationParams, require_auth]
-@router.get("/department/{department}", response_model=PaginatedResponse[JobTitleResponse])
-def get_job_titles_by_department(
-    department: str,
-    page: int = 1,
-    size: int = 10,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    pagination = PaginationParams(page=page, size=size)
-    job_title_service = JobTitleService(db)
-    return job_title_service.get_job_titles_by_department(department, pagination)
-
-
-# [GET JOB TITLES BY SENIORITY LEVEL]
-# [Endpoint GET para buscar cargos por nível de senioridade - requer autenticação]
-# [ENTRADA: seniority_level - nível de senioridade, page - número da página, size - itens por página, db - sessão do banco, current_user - usuário autenticado]
-# [SAIDA: PaginatedResponse[JobTitleResponse] - lista paginada de cargos do nível]
-# [DEPENDENCIAS: JobTitleService, PaginationParams, require_auth]
-@router.get("/seniority/{seniority_level}", response_model=PaginatedResponse[JobTitleResponse])
-def get_job_titles_by_seniority_level(
-    seniority_level: str,
-    page: int = 1,
-    size: int = 10,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    pagination = PaginationParams(page=page, size=size)
-    job_title_service = JobTitleService(db)
-    return job_title_service.get_job_titles_by_seniority_level(seniority_level, pagination)
-
-
 # [UPDATE JOB TITLE]
 # [Endpoint PUT para atualizar um cargo - requer autenticação]
 # [ENTRADA: public_id - UUID público do cargo, job_title_data - dados de atualização, db - sessão do banco, current_user - usuário autenticado]

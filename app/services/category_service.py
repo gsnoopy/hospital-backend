@@ -1,14 +1,10 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from app.repositories.category_repository import CategoryRepository
 from app.schemas.category import CategoryCreate, CategoryUpdate
 from app.models.categories import Category
 from app.validators.category_validator import CategoryValidator
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.core.exceptions import (
-    ValidationException,
-    DuplicateResourceException,
-    ResourceNotFoundException
-)
 from typing import Optional
 from uuid import UUID
 
@@ -38,11 +34,30 @@ class CategoryService:
         validation_result = self.category_validator.validate(category_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
-            raise ValidationException(errors)
+            error_messages = []
+            for field, messages in errors.items():
+                for msg in messages:
+                    error_messages.append(f"{field}: {msg}")
+
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": f"Validation error: {'; '.join(error_messages)}",
+                    "status_code": 422
+                }
+            )
 
         # Check for unique constraints
         if self.category_repository.get_by_name(category_data.name):
-            raise DuplicateResourceException("Category", "name", category_data.name)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error": True,
+                    "message": f"Category with name '{category_data.name}' already exists",
+                    "status_code": 409
+                }
+            )
 
         category = self.category_repository.create(category_data)
         return category
@@ -55,7 +70,14 @@ class CategoryService:
     def get_category_by_public_id(self, public_id: UUID) -> Category:
         category = self.category_repository.get_by_public_id(public_id)
         if not category:
-            raise ResourceNotFoundException("Category", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Category with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
         return category
 
     # [GET CATEGORY BY NAME]
@@ -93,13 +115,27 @@ class CategoryService:
     def update_category(self, public_id: UUID, category_data: CategoryUpdate) -> Category:
         category = self.category_repository.get_by_public_id(public_id)
         if not category:
-            raise ResourceNotFoundException("Category", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Category with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         # Check for conflicts if name is being updated
         if category_data.name and category_data.name != category.name:
             existing_category = self.category_repository.get_by_name(category_data.name)
             if existing_category:
-                raise DuplicateResourceException("Category", "name", category_data.name)
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "error": True,
+                        "message": f"Category with name '{category_data.name}' already exists",
+                        "status_code": 409
+                    }
+                )
 
         return self.category_repository.update(category, category_data)
 
@@ -111,6 +147,13 @@ class CategoryService:
     def delete_category(self, public_id: UUID) -> None:
         category = self.category_repository.get_by_public_id(public_id)
         if not category:
-            raise ResourceNotFoundException("Category", str(public_id))
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"Category with ID '{public_id}' not found",
+                    "status_code": 404
+                }
+            )
 
         self.category_repository.delete(category)
