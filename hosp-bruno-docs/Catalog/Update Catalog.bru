@@ -1,0 +1,21 @@
+meta {
+  name: Update Catalog
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://127.0.0.1:8000/catalog/0199d274-2195-74a1-be90-8bcb010c97d9
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Equipamento médico maneiro"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

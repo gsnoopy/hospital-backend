@@ -1,0 +1,15 @@
+meta {
+  name: Catalog by Name
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/catalog/name/Paracetamol 750mg
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

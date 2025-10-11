@@ -26,9 +26,6 @@ class UserRepository:
     # [DEPENDENCIAS: User, self.db, joinedload]
     def create(self, user_data: UserCreate, hashed_password: str, role_internal_id: int, job_title_internal_id: Optional[int] = None, hospital_internal_id: Optional[int] = None) -> User:
         db_user = User(
-            nationality=user_data.nationality,
-            document_type=user_data.document_type,
-            document=user_data.document,
             name=user_data.name,
             email=user_data.email,
             password=hashed_password,
@@ -84,14 +81,6 @@ class UserRepository:
             joinedload(User.hospital)
         ).filter(User.email == email).first()
 
-    # [GET USER BY DOCUMENT]
-    # [Busca um usuário pelo documento único]
-    # [ENTRADA: document - documento do usuário a ser buscado]
-    # [SAIDA: Optional[User] - usuário encontrado ou None se não existir]
-    # [DEPENDENCIAS: self.db, User]
-    def get_by_document(self, document: str) -> Optional[User]:
-        return self.db.query(User).filter(User.document == document).first()
-
     # [GET USER BY PHONE]
     # [Busca um usuário pelo telefone único]
     # [ENTRADA: phone - telefone do usuário a ser buscado]
@@ -100,17 +89,6 @@ class UserRepository:
     def get_by_phone(self, phone: str) -> Optional[User]:
         return self.db.query(User).filter(User.phone == phone).first()
 
-    # [GET USERS BY NATIONALITY]
-    # [Busca usuários por nacionalidade com paginação]
-    # [ENTRADA: nationality - nacionalidade dos usuários, skip - registros a pular, limit - limite]
-    # [SAIDA: list[User] - lista de usuários da nacionalidade]
-    # [DEPENDENCIAS: self.db, User, joinedload]
-    def get_by_nationality(self, nationality: str, skip: int = 0, limit: int = 100) -> list[User]:
-        return self.db.query(User).options(
-            joinedload(User.role),
-            joinedload(User.job_title),
-            joinedload(User.hospital)
-        ).filter(User.nationality == nationality).offset(skip).limit(limit).all()
 
     # [GET USERS BY ROLE ID]
     # [Busca usuários por role com paginação]

@@ -8,13 +8,10 @@ from .hospital import HospitalResponse
 
 # [USER BASE]
 # [Schema base Pydantic com campos comuns para usuário - usado como base para outros schemas]
-# [ENTRADA: nationality, document_type, document, name, email, phone, role_id, job_title_id, hospital_id]
+# [ENTRADA: name, email, phone, role_id, job_title_id, hospital_id]
 # [SAIDA: instância UserBase validada]
 # [DEPENDENCIAS: BaseModel, UUID]
 class UserBase(BaseModel):
-    nationality: str
-    document_type: str
-    document: str
     name: str
     email: str
     phone: str
@@ -38,9 +35,6 @@ class UserCreate(UserBase):
 # [SAIDA: instância UserUpdate para validação de entrada]
 # [DEPENDENCIAS: BaseModel, Optional, UUID]
 class UserUpdate(BaseModel):
-    nationality: Optional[str] = None
-    document_type: Optional[str] = None
-    document: Optional[str] = None
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -51,13 +45,10 @@ class UserUpdate(BaseModel):
 
 # [USER RESPONSE]
 # [Schema Pydantic para resposta de usuário - inclui campos de auditoria, public_id e relacionamentos]
-# [ENTRADA: nationality, document_type, document, name, email, phone, public_id, is_active, created_at, updated_at, role, job_title, hospital]
+# [ENTRADA: name, email, phone, public_id, is_active, created_at, updated_at, role, job_title, hospital]
 # [SAIDA: instância UserResponse para resposta da API]
 # [DEPENDENCIAS: BaseModel, RoleResponse, JobTitleResponse, HospitalResponse, datetime, UUID]
 class UserResponse(BaseModel):
-    nationality: str
-    document_type: str
-    document: str
     name: str
     email: str
     phone: str

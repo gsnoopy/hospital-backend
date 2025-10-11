@@ -66,15 +66,6 @@ class UserService:
                 }
             )
 
-        if self.user_repository.get_by_document(user_data.document):
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "error": True,
-                    "message": f"User with document '{user_data.document}' already exists",
-                    "status_code": 409
-                }
-            )
 
         if self.user_repository.get_by_phone(user_data.phone):
             raise HTTPException(
@@ -153,33 +144,6 @@ class UserService:
     def get_user_by_email(self, email: str) -> Optional[User]:
         return self.user_repository.get_by_email(email)
 
-    # [GET USER BY DOCUMENT]
-    # [Busca um usuário pelo documento]
-    # [ENTRADA: document - documento do usuário]
-    # [SAIDA: Optional[User] - usuário encontrado ou None]
-    # [DEPENDENCIAS: self.user_repository]
-    def get_user_by_document(self, document: str) -> Optional[User]:
-        return self.user_repository.get_by_document(document)
-
-    # [GET USERS BY NATIONALITY]
-    # [Busca usuários por nacionalidade com paginação]
-    # [ENTRADA: nationality - nacionalidade, pagination - parâmetros de paginação]
-    # [SAIDA: PaginatedResponse[User] - usuários paginados da nacionalidade]
-    # [DEPENDENCIAS: self.user_repository, PaginatedResponse]
-    def get_users_by_nationality(self, nationality: str, pagination: PaginationParams) -> PaginatedResponse[User]:
-        users = self.user_repository.get_by_nationality(
-            nationality=nationality,
-            skip=pagination.get_offset(),
-            limit=pagination.get_limit()
-        )
-        total = self.user_repository.get_total_count()
-        
-        return PaginatedResponse.create(
-            items=users,
-            page=pagination.page,
-            size=pagination.size,
-            total=total
-        )
 
     # [GET USERS BY ROLE]
     # [Busca usuários por role com paginação usando UUID público]
@@ -316,17 +280,6 @@ class UserService:
                     }
                 )
 
-        if user_data.document and user_data.document != user.document:
-            existing_user = self.user_repository.get_by_document(user_data.document)
-            if existing_user:
-                raise HTTPException(
-                    status_code=409,
-                    detail={
-                        "error": True,
-                        "message": f"User with document '{user_data.document}' already exists",
-                        "status_code": 409
-                    }
-                )
 
         if user_data.phone and user_data.phone != user.phone:
             existing_user = self.user_repository.get_by_phone(user_data.phone)

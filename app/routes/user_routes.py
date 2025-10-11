@@ -80,24 +80,6 @@ def get_user(
 
 
 
-# [GET USERS BY NATIONALITY]
-# [Endpoint GET para buscar usuários por nacionalidade - requer autenticação]
-# [ENTRADA: nationality - nacionalidade dos usuários, page - número da página, size - itens por página, db - sessão do banco, current_user - usuário autenticado]
-# [SAIDA: PaginatedResponse[UserResponse] - lista paginada de usuários da nacionalidade]
-# [DEPENDENCIAS: UserService, PaginationParams, require_auth]
-@router.get("/nationality/{nationality}", response_model=PaginatedResponse[UserResponse])
-def get_users_by_nationality(
-    nationality: str,
-    page: int = 1,
-    size: int = 10,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    pagination = PaginationParams(page=page, size=size)
-    user_service = UserService(db)
-    return user_service.get_users_by_nationality(nationality, pagination)
-
-
 # [GET USERS BY ROLE]
 # [Endpoint GET para buscar usuários por role - requer autenticação]
 # [ENTRADA: role_public_id - UUID público da role, page - número da página, size - itens por página, db - sessão do banco, current_user - usuário autenticado]

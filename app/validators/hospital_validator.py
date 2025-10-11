@@ -50,15 +50,11 @@ class HospitalValidator(BaseValidator):
     # [SAIDA: None - adiciona erros ao result se encontrados]
     # [DEPENDENCIAS: ValidationResult.add_error]
     def _validate_nationality(self, nationality: str, result: ValidationResult):
+        # Países do Mercosul e associados
         valid_nationalities = [
-            "Brasileira", "Americana", "Canadense", "Argentina", "Chilena", "Colombiana",
-            "Peruana", "Uruguaia", "Paraguaia", "Boliviana", "Venezuelana", "Equatoriana",
-            "Francesa", "Alemã", "Italiana", "Espanhola", "Portuguesa", "Inglesa",
-            "Suíça", "Holandesa", "Belga", "Austríaca", "Sueca", "Norueguesa",
-            "Dinamarquesa", "Finlandesa", "Japonesa", "Chinesa", "Coreana", "Indiana",
-            "Australiana", "Nova Zelandesa", "Mexicana", "Cubana"
+            "Brasileira", "Argentina", "Paraguaia", "Uruguaia", "Boliviana", "Chilena"
         ]
-        
+
         if nationality not in valid_nationalities:
             result.add_error(f"Nationality must be one of: {', '.join(valid_nationalities)}", "nationality")
 
@@ -68,8 +64,10 @@ class HospitalValidator(BaseValidator):
     # [SAIDA: None - adiciona erros ao result se tipo inválido]
     # [DEPENDENCIAS: ValidationResult.add_error]
     def _validate_document_type(self, document_type: str, result: ValidationResult):
-        valid_types = ["CNPJ", "EIN", "TAX_ID", "COMPANY_REG", "OTHER"]
-        
+        # Tipos de documentos para empresas do Mercosul
+        # CNPJ (Brasil), CUIT (Argentina), RUC (Paraguai), RUT (Chile/Uruguai), NIT (Bolívia)
+        valid_types = ["CNPJ", "CUIT", "RUC", "RUT", "NIT", "OTHER"]
+
         if document_type not in valid_types:
             result.add_error(f"Document type must be one of: {', '.join(valid_types)}", "document_type")
 
@@ -89,8 +87,14 @@ class HospitalValidator(BaseValidator):
 
         if document_type == "CNPJ":
             self._validate_cnpj(document, result)
-        elif document_type == "EIN":
-            self._validate_ein(document, result)
+        elif document_type == "CUIT":
+            self._validate_cuit(document, result)
+        elif document_type == "RUC":
+            self._validate_ruc(document, result)
+        elif document_type == "RUT":
+            self._validate_rut(document, result)
+        elif document_type == "NIT":
+            self._validate_nit(document, result)
         else:
             # Para outros tipos de documento, apenas validação básica
             if not re.match(r"^[a-zA-Z0-9\-/.]+$", document):
@@ -114,15 +118,57 @@ class HospitalValidator(BaseValidator):
             result.add_error("CNPJ cannot have all digits the same", "document")
             return
 
-    # [VALIDATE EIN]
-    # [Valida formato do EIN americano]
-    # [ENTRADA: ein - EIN a ser validado, result - ValidationResult]
-    # [SAIDA: None - adiciona erros ao result se EIN inválido]
+    # [VALIDATE CUIT]
+    # [Valida formato do CUIT argentino]
+    # [ENTRADA: cuit - CUIT a ser validado, result - ValidationResult]
+    # [SAIDA: None - adiciona erros ao result se CUIT inválido]
     # [DEPENDENCIAS: re, ValidationResult.add_error]
-    def _validate_ein(self, ein: str, result: ValidationResult):
-        # EIN format: XX-XXXXXXX
-        if not re.match(r'^\d{2}-\d{7}$', ein):
-            result.add_error("EIN must follow format XX-XXXXXXX", "document")
+    def _validate_cuit(self, cuit: str, result: ValidationResult):
+        # CUIT format: XX-XXXXXXXX-X (11 dígitos)
+        cuit = re.sub(r'[^0-9]', '', cuit)
+
+        if len(cuit) != 11:
+            result.add_error("CUIT must have exactly 11 digits", "document")
+            return
+
+        if cuit == cuit[0] * 11:
+            result.add_error("CUIT cannot have all digits the same", "document")
+
+    # [VALIDATE RUC]
+    # [Valida formato do RUC paraguaio]
+    # [ENTRADA: ruc - RUC a ser validado, result - ValidationResult]
+    # [SAIDA: None - adiciona erros ao result se RUC inválido]
+    # [DEPENDENCIAS: re, ValidationResult.add_error]
+    def _validate_ruc(self, ruc: str, result: ValidationResult):
+        # RUC format: Paraguai - geralmente 6-8 dígitos seguidos de -X
+        ruc = re.sub(r'[^0-9]', '', ruc)
+
+        if len(ruc) < 6 or len(ruc) > 9:
+            result.add_error("RUC must have between 6 and 9 digits", "document")
+
+    # [VALIDATE RUT]
+    # [Valida formato do RUT chileno/uruguaio]
+    # [ENTRADA: rut - RUT a ser validado, result - ValidationResult]
+    # [SAIDA: None - adiciona erros ao result se RUT inválido]
+    # [DEPENDENCIAS: re, ValidationResult.add_error]
+    def _validate_rut(self, rut: str, result: ValidationResult):
+        # RUT format: Chile/Uruguai - 8-9 dígitos (pode conter K)
+        rut = re.sub(r'[^0-9kK]', '', rut)
+
+        if len(rut) < 8 or len(rut) > 9:
+            result.add_error("RUT must have between 8 and 9 characters", "document")
+
+    # [VALIDATE NIT]
+    # [Valida formato do NIT boliviano]
+    # [ENTRADA: nit - NIT a ser validado, result - ValidationResult]
+    # [SAIDA: None - adiciona erros ao result se NIT inválido]
+    # [DEPENDENCIAS: re, ValidationResult.add_error]
+    def _validate_nit(self, nit: str, result: ValidationResult):
+        # NIT format: Bolívia - geralmente 7-10 dígitos
+        nit = re.sub(r'[^0-9]', '', nit)
+
+        if len(nit) < 7 or len(nit) > 10:
+            result.add_error("NIT must have between 7 and 10 digits", "document")
 
     # [VALIDATE EMAIL]
     # [Valida formato do email]

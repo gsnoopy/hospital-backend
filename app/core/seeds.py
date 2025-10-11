@@ -55,8 +55,8 @@ def add_default_data(connection):
         if result == 0:
             print("Criando cargo padrão...")
             connection.execute(text("""
-                INSERT INTO job_titles (title, department, seniority_level, public_id, created_at, updated_at)
-                VALUES ('Desenvolvedor Full Stack', 'Tecnologia', 'Senior', :public_id, :now1, :now2)
+                INSERT INTO job_titles (title, public_id, created_at, updated_at)
+                VALUES ('Desenvolvedor Full Stack', :public_id, :now1, :now2)
             """), {"public_id": str(uuid7()), "now1": now, "now2": now})
     except Exception as e:
         print(f"Erro ao criar cargo: {e}")
@@ -80,8 +80,8 @@ def add_default_data(connection):
 
         print("Criando usuário desenvolvedor...")
         connection.execute(text("""
-            INSERT INTO users (nationality, document_type, document, name, email, password, phone, role_id, job_title_id, hospital_id, is_active, public_id, created_at, updated_at)
-            VALUES ('Brasileira', 'CPF', '000.000.000-00', 'Desenvolvedor', :email, :password, '(11) 99999-9999', :role_id, :job_title_id, :hospital_id, TRUE, :public_id, :now1, :now2)
+            INSERT INTO users (name, email, password, phone, role_id, job_title_id, hospital_id, is_active, public_id, created_at, updated_at)
+            VALUES ('Desenvolvedor', :email, :password, '(11) 99999-9999', :role_id, :job_title_id, :hospital_id, TRUE, :public_id, :now1, :now2)
         """), {
             "email": dev_email,
             "password": password_hash,
