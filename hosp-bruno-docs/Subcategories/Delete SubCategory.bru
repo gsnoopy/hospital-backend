@@ -1,0 +1,23 @@
+meta {
+  name: Delete SubCategory
+  type: http
+  seq: 6
+}
+
+delete {
+  url: http://127.0.0.1:8000/subcategories/0199fbaf-16ca-7af3-b3a9-e343db16325b
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Medicamentos",
+    "description": "Categoria de medicamentos"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -9,7 +9,7 @@ from app.utils.uuid import uuid7_postgres
 
 # [SUBCATEGORY MODEL]
 # [Modelo SQLAlchemy que representa subcategorias que pertencem a uma categoria]
-# [ENTRADA: dados da subcategoria - name, description, category_id]
+# [ENTRADA: dados da subcategoria - name, description, category_id, hospital_id]
 # [SAIDA: instância SubCategory com timestamps automáticos e relacionamentos]
 # [DEPENDENCIAS: Base, Column, Integer, String, DateTime, Boolean, ForeignKey, relationship, get_current_time]
 class SubCategory(Base):
@@ -22,9 +22,11 @@ class SubCategory(Base):
     created_at = Column(DateTime, default=get_current_time)
     updated_at = Column(DateTime, default=get_current_time, onupdate=get_current_time)
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=False, index=True)
+    hospital_id = Column(Integer, ForeignKey("hospitals.id", ondelete="CASCADE"), nullable=False, index=True)
 
-    category = relationship("Category", back_populates="subcategories")
-    items = relationship("Item", back_populates="subcategory")
+    category = relationship("Category", back_populates="subcategories", lazy="joined")
+    hospital = relationship("Hospital", back_populates="subcategories", lazy="joined")
+    items = relationship("Item", back_populates="subcategory", lazy="noload")
 
     @hybrid_property
     def category_public_id(self):

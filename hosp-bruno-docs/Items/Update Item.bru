@@ -1,0 +1,22 @@
+meta {
+  name: Update Item
+  type: http
+  seq: 6
+}
+
+put {
+  url: http://127.0.0.1:8000/items/0199fbb2-12c8-73f2-b0ea-ce261889b27f
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "internal_code": "MED-003"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

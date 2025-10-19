@@ -1,0 +1,22 @@
+meta {
+  name: Update Category
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://127.0.0.1:8000/categories/01998ee9-ef32-7a40-b953-0a7a3e320c65
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "description": "Categoria de medicamento"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

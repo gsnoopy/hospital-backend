@@ -1,16 +1,17 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 
 # [CATALOG BASE]
 # [Schema base Pydantic com campos comuns para catalog - usado como base para outros schemas]
-# [ENTRADA: name, description, full_description, presentation]
+# [ENTRADA: name, similar_names, description, full_description, presentation]
 # [SAIDA: instância CatalogBase validada]
 # [DEPENDENCIAS: BaseModel]
 class CatalogBase(BaseModel):
     name: str
+    similar_names: Optional[List[str]] = None
     description: Optional[str] = None
     full_description: Optional[str] = None
     presentation: Optional[str] = None
@@ -27,11 +28,12 @@ class CatalogCreate(CatalogBase):
 
 # [CATALOG UPDATE]
 # [Schema Pydantic para atualização de catalog - todos campos opcionais]
-# [ENTRADA: name (opcional), description (opcional), full_description (opcional), presentation (opcional)]
+# [ENTRADA: name (opcional), similar_names (opcional), description (opcional), full_description (opcional), presentation (opcional)]
 # [SAIDA: instância CatalogUpdate para validação de entrada]
 # [DEPENDENCIAS: BaseModel]
 class CatalogUpdate(BaseModel):
     name: Optional[str] = None
+    similar_names: Optional[List[str]] = None
     description: Optional[str] = None
     full_description: Optional[str] = None
     presentation: Optional[str] = None

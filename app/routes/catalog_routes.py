@@ -121,3 +121,21 @@ def delete_catalog(
     catalog_service = CatalogService(db)
     catalog_service.delete_catalog(public_id)
     return {"message": "Catalog deleted successfully"}
+
+
+# [SEARCH CATALOGS BY SIMILAR NAMES]
+# [Endpoint GET para buscar catálogos por similar_names - requer autenticação]
+# [ENTRADA: search - termo de busca, page - número da página, size - itens por página, db - sessão do banco, current_user - usuário autenticado]
+# [SAIDA: PaginatedResponse[CatalogResponse] - lista paginada de catálogos]
+# [DEPENDENCIAS: PaginationParams, CatalogService, require_auth]
+@router.get("/search/similar-names", response_model=PaginatedResponse[CatalogResponse])
+def search_catalogs_by_similar_names(
+    search: str = Query(..., description="Search term for similar names"),
+    page: int = 1,
+    size: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    pagination = PaginationParams(page=page, size=size)
+    catalog_service = CatalogService(db)
+    return catalog_service.search_catalogs_by_similar_names(search, pagination)

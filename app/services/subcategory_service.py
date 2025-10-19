@@ -29,10 +29,10 @@ class SubCategoryService:
 
     # [CREATE SUBCATEGORY]
     # [Cria nova subcategoria com validação e verificação de duplicatas]
-    # [ENTRADA: subcategory_data - dados da subcategoria via SubCategoryCreate]
+    # [ENTRADA: subcategory_data - dados da subcategoria via SubCategoryCreate, hospital_id - ID interno do hospital]
     # [SAIDA: SubCategory - subcategoria criada ou exceções de validação/duplicata]
     # [DEPENDENCIAS: self.subcategory_validator, self.subcategory_repository, self.category_repository]
-    def create_subcategory(self, subcategory_data: SubCategoryCreate) -> SubCategory:
+    def create_subcategory(self, subcategory_data: SubCategoryCreate, hospital_id: int) -> SubCategory:
         validation_result = self.subcategory_validator.validate(subcategory_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
@@ -50,8 +50,8 @@ class SubCategoryService:
                 }
             )
 
-        # Check if category exists
-        category = self.category_repository.get_by_public_id(subcategory_data.category_id)
+        # Check if category exists and belongs to the same hospital
+        category = self.category_repository.get_by_public_id(subcategory_data.category_id, hospital_id)
         if not category:
             raise HTTPException(
                 status_code=404,
@@ -62,8 +62,8 @@ class SubCategoryService:
                 }
             )
 
-        # Check for unique constraints
-        if self.subcategory_repository.get_by_name(subcategory_data.name):
+        # Check for unique constraints within the hospital
+        if self.subcategory_repository.get_by_name(subcategory_data.name, hospital_id):
             raise HTTPException(
                 status_code=409,
                 detail={
@@ -73,16 +73,16 @@ class SubCategoryService:
                 }
             )
 
-        subcategory = self.subcategory_repository.create(subcategory_data, category.id)
+        subcategory = self.subcategory_repository.create(subcategory_data, category.id, hospital_id)
         return subcategory
 
     # [GET SUBCATEGORY BY PUBLIC ID]
     # [Busca uma subcategoria pelo seu UUID público]
-    # [ENTRADA: public_id - UUID público da subcategoria]
+    # [ENTRADA: public_id - UUID público da subcategoria, hospital_id - ID interno do hospital]
     # [SAIDA: SubCategory - subcategoria encontrada ou exceção se não encontrada]
     # [DEPENDENCIAS: self.subcategory_repository]
-    def get_subcategory_by_public_id(self, public_id: UUID) -> SubCategory:
-        subcategory = self.subcategory_repository.get_by_public_id(public_id)
+    def get_subcategory_by_public_id(self, public_id: UUID, hospital_id: int) -> SubCategory:
+        subcategory = self.subcategory_repository.get_by_public_id(public_id, hospital_id)
         if not subcategory:
             raise HTTPException(
                 status_code=404,
@@ -96,19 +96,19 @@ class SubCategoryService:
 
     # [GET SUBCATEGORY BY NAME]
     # [Busca uma subcategoria pelo seu nome]
-    # [ENTRADA: name - nome da subcategoria]
+    # [ENTRADA: name - nome da subcategoria, hospital_id - ID interno do hospital]
     # [SAIDA: Optional[SubCategory] - subcategoria encontrada ou None]
     # [DEPENDENCIAS: self.subcategory_repository]
-    def get_subcategory_by_name(self, name: str) -> Optional[SubCategory]:
-        return self.subcategory_repository.get_by_name(name)
+    def get_subcategory_by_name(self, name: str, hospital_id: int) -> Optional[SubCategory]:
+        return self.subcategory_repository.get_by_name(name, hospital_id)
 
     # [GET SUBCATEGORIES BY CATEGORY]
     # [Busca subcategorias por categoria com paginação]
-    # [ENTRADA: category_public_id - UUID público da categoria, pagination - parâmetros de paginação]
+    # [ENTRADA: category_public_id - UUID público da categoria, pagination - parâmetros de paginação, hospital_id - ID interno do hospital]
     # [SAIDA: PaginatedResponse[SubCategory] - subcategorias paginadas da categoria]
     # [DEPENDENCIAS: self.subcategory_repository, self.category_repository, PaginatedResponse]
-    def get_subcategories_by_category(self, category_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[SubCategory]:
-        category = self.category_repository.get_by_public_id(category_public_id)
+    def get_subcategories_by_category(self, category_public_id: UUID, pagination: PaginationParams, hospital_id: int) -> PaginatedResponse[SubCategory]:
+        category = self.category_repository.get_by_public_id(category_public_id, hospital_id)
         if not category:
             raise HTTPException(
                 status_code=404,
@@ -121,10 +121,11 @@ class SubCategoryService:
 
         subcategories = self.subcategory_repository.get_by_category(
             category_id=category.id,
+            hospital_id=hospital_id,
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
-        total = self.subcategory_repository.get_total_count_by_category(category.id)
+        total = self.subcategory_repository.get_total_count_by_category(category.id, hospital_id)
 
         return PaginatedResponse.create(
             items=subcategories,
@@ -135,15 +136,16 @@ class SubCategoryService:
 
     # [GET PAGINATED SUBCATEGORIES]
     # [Busca subcategorias com paginação criando resposta com metadados]
-    # [ENTRADA: pagination - parâmetros de paginação]
+    # [ENTRADA: pagination - parâmetros de paginação, hospital_id - ID interno do hospital]
     # [SAIDA: PaginatedResponse[SubCategory] - subcategorias paginadas com metadados]
     # [DEPENDENCIAS: self.subcategory_repository, PaginatedResponse]
-    def get_paginated_subcategories(self, pagination: PaginationParams) -> PaginatedResponse[SubCategory]:
+    def get_paginated_subcategories(self, pagination: PaginationParams, hospital_id: int) -> PaginatedResponse[SubCategory]:
         subcategories = self.subcategory_repository.get_all(
+            hospital_id=hospital_id,
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
-        total = self.subcategory_repository.get_total_count()
+        total = self.subcategory_repository.get_total_count(hospital_id)
 
         return PaginatedResponse.create(
             items=subcategories,
@@ -154,11 +156,11 @@ class SubCategoryService:
 
     # [UPDATE SUBCATEGORY]
     # [Atualiza uma subcategoria existente]
-    # [ENTRADA: public_id - UUID público da subcategoria, subcategory_data - dados de atualização]
+    # [ENTRADA: public_id - UUID público da subcategoria, subcategory_data - dados de atualização, hospital_id - ID interno do hospital]
     # [SAIDA: SubCategory - subcategoria atualizada ou exceção se não encontrada]
     # [DEPENDENCIAS: self.subcategory_repository, self.category_repository]
-    def update_subcategory(self, public_id: UUID, subcategory_data: SubCategoryUpdate) -> SubCategory:
-        subcategory = self.subcategory_repository.get_by_public_id(public_id)
+    def update_subcategory(self, public_id: UUID, subcategory_data: SubCategoryUpdate, hospital_id: int) -> SubCategory:
+        subcategory = self.subcategory_repository.get_by_public_id(public_id, hospital_id)
         if not subcategory:
             raise HTTPException(
                 status_code=404,
@@ -173,7 +175,7 @@ class SubCategoryService:
 
         # Check if category exists if category_id is being updated
         if subcategory_data.category_id:
-            category = self.category_repository.get_by_public_id(subcategory_data.category_id)
+            category = self.category_repository.get_by_public_id(subcategory_data.category_id, hospital_id)
             if not category:
                 raise HTTPException(
                     status_code=404,
@@ -187,7 +189,7 @@ class SubCategoryService:
 
         # Check for conflicts if name is being updated
         if subcategory_data.name and subcategory_data.name != subcategory.name:
-            existing_subcategory = self.subcategory_repository.get_by_name(subcategory_data.name)
+            existing_subcategory = self.subcategory_repository.get_by_name(subcategory_data.name, hospital_id)
             if existing_subcategory:
                 raise HTTPException(
                     status_code=409,
@@ -202,11 +204,11 @@ class SubCategoryService:
 
     # [DELETE SUBCATEGORY]
     # [Remove uma subcategoria do sistema]
-    # [ENTRADA: public_id - UUID público da subcategoria a ser removida]
+    # [ENTRADA: public_id - UUID público da subcategoria a ser removida, hospital_id - ID interno do hospital]
     # [SAIDA: None - exceção se não encontrada]
     # [DEPENDENCIAS: self.subcategory_repository]
-    def delete_subcategory(self, public_id: UUID) -> None:
-        subcategory = self.subcategory_repository.get_by_public_id(public_id)
+    def delete_subcategory(self, public_id: UUID, hospital_id: int) -> None:
+        subcategory = self.subcategory_repository.get_by_public_id(public_id, hospital_id)
         if not subcategory:
             raise HTTPException(
                 status_code=404,

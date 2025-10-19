@@ -12,6 +12,7 @@ Este documento descreve todas as validações implementadas no backend para cada
 4. [Category](#category)
 5. [SubCategory](#subcategory)
 6. [Catalog](#catalog)
+7. [Item](#item)
 
 ---
 
@@ -305,6 +306,114 @@ Este documento descreve todas as validações implementadas no backend para cada
 - **Mensagem de erro**:
   - `"Catalog presentation must be less than 100 characters"`
 
+### Campo: `similar_names`
+- **Obrigatório**: Não
+- **Tipo**: Array de Strings
+- **Regras**:
+  - Máximo: 20 itens no array
+  - Cada item deve ter:
+    - Mínimo: 2 caracteres
+    - Máximo: 200 caracteres
+    - Caracteres permitidos: Letras (a-z, A-Z, À-ÿ), números (0-9), espaços, `-`, `&`, `(`, `)`, `.`, `,`, `/`, `+`
+- **Mensagens de erro**:
+  - `"Similar names must be a list"`
+  - `"Similar names list must have at most 20 items"`
+  - `"Similar name at index {idx} must be a string"`
+  - `"Similar name at index {idx} must be at least 2 characters"`
+  - `"Similar name at index {idx} must be less than 200 characters"`
+  - `"Similar name at index {idx} contains invalid characters"`
+
+---
+
+## 📦 Item
+
+### Campo: `name`
+- **Obrigatório**: Sim
+- **Tipo**: String
+- **Regras**:
+  - Mínimo: 2 caracteres
+  - Máximo: 200 caracteres
+  - Caracteres permitidos: Letras (a-z, A-Z, À-ÿ), números (0-9), espaços, `-`, `&`, `(`, `)`, `.`, `,`, `/`, `+`
+- **Mensagens de erro**:
+  - `"Item name must be at least 2 characters long"`
+  - `"Item name must be less than 200 characters"`
+  - `"Item name contains invalid characters"`
+
+### Campo: `similar_names`
+- **Obrigatório**: Não
+- **Tipo**: Array de Strings
+- **Regras**:
+  - Máximo: 20 itens no array
+  - Cada item deve ter:
+    - Mínimo: 2 caracteres
+    - Máximo: 200 caracteres
+    - Caracteres permitidos: Letras (a-z, A-Z, À-ÿ), números (0-9), espaços, `-`, `&`, `(`, `)`, `.`, `,`, `/`, `+`
+- **Mensagens de erro**:
+  - `"Similar names must be a list"`
+  - `"Similar names list must have at most 20 items"`
+  - `"Similar name at index {idx} must be a string"`
+  - `"Similar name at index {idx} must be at least 2 characters"`
+  - `"Similar name at index {idx} must be less than 200 characters"`
+  - `"Similar name at index {idx} contains invalid characters"`
+
+### Campo: `description`
+- **Obrigatório**: Não
+- **Tipo**: String
+- **Regras**:
+  - Máximo: 500 caracteres
+- **Mensagem de erro**:
+  - `"Item description must be less than 500 characters"`
+
+### Campo: `full_description`
+- **Obrigatório**: Não
+- **Tipo**: Text
+- **Regras**:
+  - Máximo: 2000 caracteres
+- **Mensagem de erro**:
+  - `"Item full description must be less than 2000 characters"`
+
+### Campo: `internal_code`
+- **Obrigatório**: Não
+- **Tipo**: String
+- **Regras**:
+  - Máximo: 50 caracteres
+  - Caracteres permitidos: Letras (a-z, A-Z), números (0-9), hífens (`-`), underscores (`_`)
+- **Mensagens de erro**:
+  - `"Internal code must be less than 50 characters"`
+  - `"Internal code must contain only letters, numbers, hyphens and underscores"`
+
+### Campo: `presentation`
+- **Obrigatório**: Não
+- **Tipo**: String
+- **Regras**:
+  - Máximo: 100 caracteres
+- **Mensagem de erro**:
+  - `"Item presentation must be less than 100 characters"`
+
+### Campo: `sample`
+- **Obrigatório**: Não
+- **Tipo**: Integer
+- **Regras**:
+  - Deve ser um número positivo (>= 0)
+- **Mensagem de erro**:
+  - `"Sample quantity must be a positive number"`
+
+### Campo: `has_catalog`
+- **Obrigatório**: Não
+- **Tipo**: Boolean
+- **Valor padrão**: `false`
+- **Regras**:
+  - Deve ser `true` ou `false`
+
+### Campo: `subcategory_id`
+- **Obrigatório**: Sim
+- **Tipo**: UUID
+- **Regras**:
+  - Deve ser um UUID válido
+  - A subcategoria referenciada deve existir no sistema
+- **Mensagens de erro**:
+  - `"SubCategory with ID '{id}' not found"` (verificado no service)
+
 ---
 
 ## 🔄 Validações Adicionais (Service Layer)
@@ -337,6 +446,9 @@ As seguintes entidades verificam se já existe um registro com o mesmo valor:
 **Catalog**:
 - `name`: Nome único
 
+**Item**:
+- `internal_code`: Código interno único (se fornecido)
+
 ### Existência de Relacionamentos
 
 **User**:
@@ -346,6 +458,9 @@ As seguintes entidades verificam se já existe um registro com o mesmo valor:
 
 **SubCategory**:
 - `category_id`: Category deve existir
+
+**Item**:
+- `subcategory_id`: SubCategory deve existir
 
 ---
 
@@ -398,6 +513,6 @@ As seguintes entidades verificam se já existe um registro com o mesmo valor:
 
 ---
 
-**Última atualização**: 2025-10-11
+**Última atualização**: 2025-10-19
 **Versão do Backend**: 1.0.0
 **Região**: Mercosul (Brasil, Argentina, Paraguai, Uruguai, Chile, Bolívia)

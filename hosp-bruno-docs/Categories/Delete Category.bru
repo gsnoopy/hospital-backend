@@ -1,0 +1,23 @@
+meta {
+  name: Delete Category
+  type: http
+  seq: 6
+}
+
+delete {
+  url: http://127.0.0.1:8000/categories/01998ee9-ef32-7a40-b953-0a7a3e320c65
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Medicamentos",
+    "description": "Categoria de medicamentos"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

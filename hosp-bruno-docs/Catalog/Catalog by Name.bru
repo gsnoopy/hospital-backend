@@ -1,15 +1,20 @@
 meta {
   name: Catalog by Name
   type: http
-  seq: 4
+  seq: 6
 }
 
 get {
-  url: http://127.0.0.1:8000/catalog/name/Paracetamol 750mg
+  url: http://127.0.0.1:8000/catalog/?search=paracetamol
   body: none
   auth: inherit
 }
 
+params:query {
+  search: paracetamol
+}
+
 settings {
   encodeUrl: true
+  timeout: 0
 }

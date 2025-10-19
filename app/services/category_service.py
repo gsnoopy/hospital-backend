@@ -27,10 +27,10 @@ class CategoryService:
 
     # [CREATE CATEGORY]
     # [Cria nova categoria com validação e verificação de duplicatas]
-    # [ENTRADA: category_data - dados da categoria via CategoryCreate]
+    # [ENTRADA: category_data - dados da categoria via CategoryCreate, hospital_id - ID interno do hospital]
     # [SAIDA: Category - categoria criada ou exceções de validação/duplicata]
     # [DEPENDENCIAS: self.category_validator, self.category_repository]
-    def create_category(self, category_data: CategoryCreate) -> Category:
+    def create_category(self, category_data: CategoryCreate, hospital_id: int) -> Category:
         validation_result = self.category_validator.validate(category_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
@@ -48,8 +48,8 @@ class CategoryService:
                 }
             )
 
-        # Check for unique constraints
-        if self.category_repository.get_by_name(category_data.name):
+        # Check for unique constraints within hospital
+        if self.category_repository.get_by_name(category_data.name, hospital_id):
             raise HTTPException(
                 status_code=409,
                 detail={
@@ -59,16 +59,16 @@ class CategoryService:
                 }
             )
 
-        category = self.category_repository.create(category_data)
+        category = self.category_repository.create(category_data, hospital_id)
         return category
 
     # [GET CATEGORY BY PUBLIC ID]
     # [Busca uma categoria pelo seu UUID público]
-    # [ENTRADA: public_id - UUID público da categoria]
+    # [ENTRADA: public_id - UUID público da categoria, hospital_id - ID interno do hospital]
     # [SAIDA: Category - categoria encontrada ou exceção se não encontrada]
     # [DEPENDENCIAS: self.category_repository]
-    def get_category_by_public_id(self, public_id: UUID) -> Category:
-        category = self.category_repository.get_by_public_id(public_id)
+    def get_category_by_public_id(self, public_id: UUID, hospital_id: int) -> Category:
+        category = self.category_repository.get_by_public_id(public_id, hospital_id)
         if not category:
             raise HTTPException(
                 status_code=404,
@@ -82,23 +82,24 @@ class CategoryService:
 
     # [GET CATEGORY BY NAME]
     # [Busca uma categoria pelo seu nome]
-    # [ENTRADA: name - nome da categoria]
+    # [ENTRADA: name - nome da categoria, hospital_id - ID interno do hospital]
     # [SAIDA: Optional[Category] - categoria encontrada ou None]
     # [DEPENDENCIAS: self.category_repository]
-    def get_category_by_name(self, name: str) -> Optional[Category]:
-        return self.category_repository.get_by_name(name)
+    def get_category_by_name(self, name: str, hospital_id: int) -> Optional[Category]:
+        return self.category_repository.get_by_name(name, hospital_id)
 
     # [GET PAGINATED CATEGORIES]
     # [Busca categorias com paginação criando resposta com metadados]
-    # [ENTRADA: pagination - parâmetros de paginação]
+    # [ENTRADA: pagination - parâmetros de paginação, hospital_id - ID interno do hospital]
     # [SAIDA: PaginatedResponse[Category] - categorias paginadas com metadados]
     # [DEPENDENCIAS: self.category_repository, PaginatedResponse]
-    def get_paginated_categories(self, pagination: PaginationParams) -> PaginatedResponse[Category]:
+    def get_paginated_categories(self, pagination: PaginationParams, hospital_id: int) -> PaginatedResponse[Category]:
         categories = self.category_repository.get_all(
+            hospital_id=hospital_id,
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
-        total = self.category_repository.get_total_count()
+        total = self.category_repository.get_total_count(hospital_id)
 
         return PaginatedResponse.create(
             items=categories,
@@ -109,11 +110,11 @@ class CategoryService:
 
     # [UPDATE CATEGORY]
     # [Atualiza uma categoria existente]
-    # [ENTRADA: public_id - UUID público da categoria, category_data - dados de atualização]
+    # [ENTRADA: public_id - UUID público da categoria, category_data - dados de atualização, hospital_id - ID interno do hospital]
     # [SAIDA: Category - categoria atualizada ou exceção se não encontrada]
     # [DEPENDENCIAS: self.category_repository]
-    def update_category(self, public_id: UUID, category_data: CategoryUpdate) -> Category:
-        category = self.category_repository.get_by_public_id(public_id)
+    def update_category(self, public_id: UUID, category_data: CategoryUpdate, hospital_id: int) -> Category:
+        category = self.category_repository.get_by_public_id(public_id, hospital_id)
         if not category:
             raise HTTPException(
                 status_code=404,
@@ -126,7 +127,7 @@ class CategoryService:
 
         # Check for conflicts if name is being updated
         if category_data.name and category_data.name != category.name:
-            existing_category = self.category_repository.get_by_name(category_data.name)
+            existing_category = self.category_repository.get_by_name(category_data.name, hospital_id)
             if existing_category:
                 raise HTTPException(
                     status_code=409,
@@ -141,11 +142,11 @@ class CategoryService:
 
     # [DELETE CATEGORY]
     # [Remove uma categoria do sistema]
-    # [ENTRADA: public_id - UUID público da categoria a ser removida]
+    # [ENTRADA: public_id - UUID público da categoria a ser removida, hospital_id - ID interno do hospital]
     # [SAIDA: None - exceção se não encontrada]
     # [DEPENDENCIAS: self.category_repository]
-    def delete_category(self, public_id: UUID) -> None:
-        category = self.category_repository.get_by_public_id(public_id)
+    def delete_category(self, public_id: UUID, hospital_id: int) -> None:
+        category = self.category_repository.get_by_public_id(public_id, hospital_id)
         if not category:
             raise HTTPException(
                 status_code=404,

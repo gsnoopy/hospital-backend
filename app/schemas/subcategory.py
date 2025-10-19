@@ -6,7 +6,7 @@ from uuid import UUID
 
 # [SUBCATEGORY BASE]
 # [Schema base Pydantic com campos comuns para subcategoria - usado como base para outros schemas]
-# [ENTRADA: name, description, category_id]
+# [ENTRADA: name, description, category_id (hospital_id vem do usuário logado)]
 # [SAIDA: instância SubCategoryBase validada]
 # [DEPENDENCIAS: BaseModel]
 class SubCategoryBase(BaseModel):
@@ -17,7 +17,7 @@ class SubCategoryBase(BaseModel):
 
 # [SUBCATEGORY CREATE]
 # [Schema Pydantic para criação de subcategoria - herda campos base]
-# [ENTRADA: herda todos campos de SubCategoryBase]
+# [ENTRADA: herda todos campos de SubCategoryBase (hospital_id vem do usuário logado)]
 # [SAIDA: instância SubCategoryCreate para validação de entrada]
 # [DEPENDENCIAS: SubCategoryBase]
 class SubCategoryCreate(SubCategoryBase):
@@ -36,10 +36,10 @@ class SubCategoryUpdate(BaseModel):
 
 
 # [SUBCATEGORY RESPONSE]
-# [Schema Pydantic para resposta de subcategoria - inclui dados do banco e categoria]
+# [Schema Pydantic para resposta de subcategoria - inclui dados do banco]
 # [ENTRADA: dados completos da subcategoria do banco]
 # [SAIDA: instância SubCategoryResponse para serialização de saída]
-# [DEPENDENCIAS: SubCategoryBase, UUID, datetime]
+# [DEPENDENCIAS: BaseModel, UUID, datetime]
 class SubCategoryResponse(BaseModel):
     public_id: UUID
     name: str

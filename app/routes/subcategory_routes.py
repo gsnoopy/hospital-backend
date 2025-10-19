@@ -4,8 +4,7 @@ from app.core.database import get_db
 from app.services.subcategory_service import SubCategoryService
 from app.schemas.subcategory import SubCategoryCreate, SubCategoryUpdate, SubCategoryResponse
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.decorators import require_auth
-from app.models.user import User
+from app.decorators import require_hospital
 from uuid import UUID
 
 
@@ -25,11 +24,11 @@ router = APIRouter(prefix="/subcategories", tags=["subcategories"])
 @router.post("/", response_model=SubCategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_subcategory(
     subcategory_data: SubCategoryCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     subcategory_service = SubCategoryService(db)
-    return subcategory_service.create_subcategory(subcategory_data)
+    return subcategory_service.create_subcategory(subcategory_data, hospital_id)
 
 
 # [GET SUBCATEGORIES]
@@ -41,12 +40,12 @@ def create_subcategory(
 def get_subcategories(
     page: int = 1,
     size: int = 10,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     pagination = PaginationParams(page=page, size=size)
     subcategory_service = SubCategoryService(db)
-    return subcategory_service.get_paginated_subcategories(pagination)
+    return subcategory_service.get_paginated_subcategories(pagination, hospital_id)
 
 
 # [GET SUBCATEGORY]
@@ -57,11 +56,11 @@ def get_subcategories(
 @router.get("/{public_id}", response_model=SubCategoryResponse)
 def get_subcategory(
     public_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     subcategory_service = SubCategoryService(db)
-    return subcategory_service.get_subcategory_by_public_id(public_id)
+    return subcategory_service.get_subcategory_by_public_id(public_id, hospital_id)
 
 
 # [GET SUBCATEGORY BY NAME]
@@ -72,11 +71,11 @@ def get_subcategory(
 @router.get("/name/{name}", response_model=SubCategoryResponse)
 def get_subcategory_by_name(
     name: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     subcategory_service = SubCategoryService(db)
-    subcategory = subcategory_service.get_subcategory_by_name(name)
+    subcategory = subcategory_service.get_subcategory_by_name(name, hospital_id)
 
     if not subcategory:
         from app.core.exceptions import ResourceNotFoundException
@@ -95,12 +94,12 @@ def get_subcategories_by_category(
     category_id: UUID,
     page: int = 1,
     size: int = 10,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     pagination = PaginationParams(page=page, size=size)
     subcategory_service = SubCategoryService(db)
-    return subcategory_service.get_subcategories_by_category(category_id, pagination)
+    return subcategory_service.get_subcategories_by_category(category_id, pagination, hospital_id)
 
 
 # [UPDATE SUBCATEGORY]
@@ -112,11 +111,11 @@ def get_subcategories_by_category(
 def update_subcategory(
     public_id: UUID,
     subcategory_data: SubCategoryUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     subcategory_service = SubCategoryService(db)
-    return subcategory_service.update_subcategory(public_id, subcategory_data)
+    return subcategory_service.update_subcategory(public_id, subcategory_data, hospital_id)
 
 
 # [DELETE SUBCATEGORY]
@@ -127,9 +126,9 @@ def update_subcategory(
 @router.delete("/{public_id}")
 def delete_subcategory(
     public_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    hospital_id: int = Depends(require_hospital),
+    db: Session = Depends(get_db)
 ):
     subcategory_service = SubCategoryService(db)
-    subcategory_service.delete_subcategory(public_id)
+    subcategory_service.delete_subcategory(public_id, hospital_id)
     return {"message": "SubCategory deleted successfully"}

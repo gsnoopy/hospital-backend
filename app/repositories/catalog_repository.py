@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, func
 from app.models.catalog import Catalog
 from app.schemas.catalog import CatalogCreate, CatalogUpdate
 from typing import Optional, List
@@ -28,6 +29,7 @@ class CatalogRepository:
     def create(self, catalog_data: CatalogCreate) -> Catalog:
         db_catalog = Catalog(
             name=catalog_data.name,
+            similar_names=catalog_data.similar_names,
             description=catalog_data.description,
             full_description=catalog_data.full_description,
             presentation=catalog_data.presentation,
@@ -111,3 +113,23 @@ class CatalogRepository:
     def delete(self, catalog: Catalog) -> None:
         self.db.delete(catalog)
         self.db.commit()
+
+    # [SEARCH BY SIMILAR NAMES]
+    # [Busca catálogos por similar_names (array de strings)]
+    # [ENTRADA: search_term - termo de busca, skip - registros a pular, limit - limite]
+    # [SAIDA: List[Catalog] - lista de catálogos com similar_names contendo o termo]
+    # [DEPENDENCIAS: Catalog, self.db, func]
+    def search_by_similar_names(self, search_term: str, skip: int = 0, limit: int = 100) -> List[Catalog]:
+        return self.db.query(Catalog).filter(
+            func.array_to_string(Catalog.similar_names, ' ').ilike(f"%{search_term}%")
+        ).offset(skip).limit(limit).all()
+
+    # [GET SIMILAR NAMES SEARCH COUNT]
+    # [Conta total de catálogos com similar_names contendo o termo]
+    # [ENTRADA: search_term - termo de busca]
+    # [SAIDA: int - número total de catálogos encontrados]
+    # [DEPENDENCIAS: Catalog, self.db, func]
+    def get_similar_names_search_count(self, search_term: str) -> int:
+        return self.db.query(Catalog).filter(
+            func.array_to_string(Catalog.similar_names, ' ').ilike(f"%{search_term}%")
+        ).count()

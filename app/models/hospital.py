@@ -26,5 +26,8 @@ class Hospital(Base):
     image = Column(LargeBinary, nullable=True)
     created_at = Column(DateTime, default=get_current_time)
     updated_at = Column(DateTime, default=get_current_time, onupdate=get_current_time)
-    
-    users = relationship("User", back_populates="hospital")
+
+    users = relationship("User", back_populates="hospital", lazy="noload")
+    categories = relationship("Category", back_populates="hospital", cascade="all, delete-orphan", lazy="noload")
+    subcategories = relationship("SubCategory", back_populates="hospital", cascade="all, delete-orphan", lazy="noload")
+    items = relationship("Item", back_populates="hospital", lazy="noload")

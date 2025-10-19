@@ -177,3 +177,23 @@ class CatalogService:
             )
 
         self.catalog_repository.delete(catalog)
+
+    # [SEARCH CATALOGS BY SIMILAR NAMES]
+    # [Busca catálogos por similar_names com paginação]
+    # [ENTRADA: search_term - termo de busca, pagination - parâmetros de paginação]
+    # [SAIDA: PaginatedResponse[Catalog] - catálogos encontrados paginados]
+    # [DEPENDENCIAS: self.catalog_repository, PaginatedResponse]
+    def search_catalogs_by_similar_names(self, search_term: str, pagination: PaginationParams) -> PaginatedResponse[Catalog]:
+        catalogs = self.catalog_repository.search_by_similar_names(
+            search_term=search_term,
+            skip=pagination.get_offset(),
+            limit=pagination.get_limit()
+        )
+        total = self.catalog_repository.get_similar_names_search_count(search_term)
+
+        return PaginatedResponse.create(
+            items=catalogs,
+            page=pagination.page,
+            size=pagination.size,
+            total=total
+        )

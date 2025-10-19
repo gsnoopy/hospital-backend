@@ -1,0 +1,23 @@
+meta {
+  name: Category by Name
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/categories/name/Medicamentos
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Medicamentos",
+    "description": "Categoria de medicamentos"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

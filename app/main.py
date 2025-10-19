@@ -9,6 +9,7 @@ from app.routes.health_routes import router as health_router
 from app.routes.category_routes import router as category_router
 from app.routes.subcategory_routes import router as subcategory_router
 from app.routes.catalog_routes import router as catalog_router
+from app.routes.item_routes import router as item_router
 from app.core.database import engine, Base
 from app.security import rate_limiter
 from app.core.config import settings
@@ -73,7 +74,7 @@ app.middleware("http")(rate_limit_middleware)
 
 # [ROUTER REGISTRATION]
 # [Registra todos os routers da aplicação com seus endpoints]
-# [ENTRADA: routers - auth, user, role, enterprise, job_title, vacation, leave_type, leave, hospital, health]
+# [ENTRADA: routers - auth, user, role, enterprise, job_title, vacation, leave_type, leave, hospital, health, category, subcategory, catalog, item]
 # [SAIDA: None - adiciona rotas à aplicação]
 # [DEPENDENCIAS: app, todos os routers importados]
 app.include_router(auth_router)
@@ -85,6 +86,7 @@ app.include_router(health_router)
 app.include_router(category_router)
 app.include_router(subcategory_router)
 app.include_router(catalog_router)
+app.include_router(item_router)
 
 # [READ ROOT]
 # [Endpoint GET raiz que retorna mensagem de status da API]
@@ -93,4 +95,4 @@ app.include_router(catalog_router)
 # [DEPENDENCIAS: app]
 @app.get("/")
 def read_root():
-    return {"message": "3DI RH Backend API is running!"}
+    return {"message": "Hospital Backend API is running!"}

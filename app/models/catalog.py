@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
@@ -17,6 +17,7 @@ class Catalog(Base):
     id = Column(Integer, primary_key=True, index=True)
     public_id = Column(UUID(as_uuid=True), unique=True, default=uuid7_postgres, index=True, nullable=False)
     name = Column(String, nullable=False, index=True)
+    similar_names = Column(ARRAY(String), nullable=True)
     description = Column(String, nullable=True)
     full_description = Column(Text, nullable=True)
     presentation = Column(String, nullable=True)

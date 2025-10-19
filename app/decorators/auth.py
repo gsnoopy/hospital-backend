@@ -37,6 +37,7 @@ def require_auth(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     
-    # User is active by default since is_active field was removed
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Inactive user")    
     
     return user

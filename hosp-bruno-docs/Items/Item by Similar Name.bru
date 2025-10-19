@@ -1,0 +1,20 @@
+meta {
+  name: Item by Similar Name
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/items/search/similar-names?search=tylenol
+  body: none
+  auth: inherit
+}
+
+params:query {
+  search: tylenol
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

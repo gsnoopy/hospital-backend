@@ -16,7 +16,7 @@ class CategoryBase(BaseModel):
 
 # [CATEGORY CREATE]
 # [Schema Pydantic para criação de categoria - herda campos base]
-# [ENTRADA: herda todos campos de CategoryBase]
+# [ENTRADA: herda todos campos de CategoryBase (hospital_id vem do usuário logado)]
 # [SAIDA: instância CategoryCreate para validação de entrada]
 # [DEPENDENCIAS: CategoryBase]
 class CategoryCreate(CategoryBase):
