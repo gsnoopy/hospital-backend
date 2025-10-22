@@ -4,7 +4,8 @@ from app.core.database import get_db
 from app.services.job_title_service import JobTitleService
 from app.schemas.job_title import JobTitleCreate, JobTitleUpdate, JobTitleResponse
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.decorators import require_auth, require_roles
+from app.decorators import require_auth, require_role
+from app.core.hospital_context import HospitalContext
 from app.models.user import User
 from uuid import UUID
 

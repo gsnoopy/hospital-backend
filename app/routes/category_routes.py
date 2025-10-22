@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.hospital_context import HospitalContext
 from app.services.category_service import CategoryService
 from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.decorators import require_hospital
+from app.decorators import require_role
 from uuid import UUID
 
 
@@ -17,65 +18,65 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 
 
 # [CREATE CATEGORY]
-# [Endpoint POST para criar uma nova categoria - requer autenticação e extrai hospital do usuário]
-# [ENTRADA: category_data - dados da categoria, hospital_id - ID do hospital (automático), db - sessão do banco]
+# [Endpoint POST para criar uma nova categoria - requer Desenvolvedor, Administrador ou Gerente]
+# [ENTRADA: category_data - dados da categoria, context - contexto de hospital, db - sessão do banco]
 # [SAIDA: CategoryResponse - categoria criada (status 201) ou exceções personalizadas]
-# [DEPENDENCIAS: CategoryService, require_hospital]
+# [DEPENDENCIAS: CategoryService, require_role_and_hospital, HospitalContext]
 @router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_category(
     category_data: CategoryCreate,
-    hospital_id: int = Depends(require_hospital),
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
     db: Session = Depends(get_db)
 ):
     category_service = CategoryService(db)
-    return category_service.create_category(category_data, hospital_id)
+    return category_service.create_category(category_data, context.hospital_id)
 
 
 # [GET CATEGORIES]
-# [Endpoint GET para listar categorias do hospital do usuário com paginação]
-# [ENTRADA: page - número da página, size - itens por página, hospital_id - ID do hospital (automático), db - sessão do banco]
-# [SAIDA: PaginatedResponse[CategoryResponse] - lista paginada de categorias do hospital]
-# [DEPENDENCIAS: PaginationParams, CategoryService, require_hospital]
+# [Endpoint GET para listar categorias - Desenvolvedor vê todas, outros veem apenas do próprio hospital]
+# [ENTRADA: page - número da página, size - itens por página, context - contexto de hospital, db - sessão do banco]
+# [SAIDA: PaginatedResponse[CategoryResponse] - lista paginada de categorias]
+# [DEPENDENCIAS: PaginationParams, CategoryService, require_role_and_hospital, HospitalContext]
 @router.get("/", response_model=PaginatedResponse[CategoryResponse])
 def get_categories(
     page: int = 1,
     size: int = 10,
-    hospital_id: int = Depends(require_hospital),
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
     db: Session = Depends(get_db)
 ):
     pagination = PaginationParams(page=page, size=size)
     category_service = CategoryService(db)
-    return category_service.get_paginated_categories(pagination, hospital_id)
+    return category_service.get_paginated_categories(pagination, context.hospital_id)
 
 
 # [GET CATEGORY]
-# [Endpoint GET para buscar uma categoria pelo UUID público (apenas do hospital do usuário)]
-# [ENTRADA: public_id - UUID público da categoria, hospital_id - ID do hospital (automático), db - sessão do banco]
+# [Endpoint GET para buscar uma categoria pelo UUID público]
+# [ENTRADA: public_id - UUID público da categoria, context - contexto de hospital, db - sessão do banco]
 # [SAIDA: CategoryResponse - dados da categoria ou exceção]
-# [DEPENDENCIAS: CategoryService, require_hospital]
+# [DEPENDENCIAS: CategoryService, require_role_and_hospital, HospitalContext]
 @router.get("/{public_id}", response_model=CategoryResponse)
 def get_category(
     public_id: UUID,
-    hospital_id: int = Depends(require_hospital),
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
     db: Session = Depends(get_db)
 ):
     category_service = CategoryService(db)
-    return category_service.get_category_by_public_id(public_id, hospital_id)
+    return category_service.get_category_by_public_id(public_id, context.hospital_id)
 
 
 # [GET CATEGORY BY NAME]
-# [Endpoint GET para buscar uma categoria pelo nome (apenas do hospital do usuário)]
-# [ENTRADA: name - nome da categoria, hospital_id - ID do hospital (automático), db - sessão do banco]
+# [Endpoint GET para buscar uma categoria pelo nome]
+# [ENTRADA: name - nome da categoria, context - contexto de hospital, db - sessão do banco]
 # [SAIDA: CategoryResponse - dados da categoria ou 404]
-# [DEPENDENCIAS: CategoryService, require_hospital]
+# [DEPENDENCIAS: CategoryService, require_role_and_hospital, HospitalContext]
 @router.get("/name/{name}", response_model=CategoryResponse)
 def get_category_by_name(
     name: str,
-    hospital_id: int = Depends(require_hospital),
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
     db: Session = Depends(get_db)
 ):
     category_service = CategoryService(db)
-    category = category_service.get_category_by_name(name, hospital_id)
+    category = category_service.get_category_by_name(name, context.hospital_id)
 
     if not category:
         from app.core.exceptions import ResourceNotFoundException
@@ -85,32 +86,32 @@ def get_category_by_name(
 
 
 # [UPDATE CATEGORY]
-# [Endpoint PUT para atualizar uma categoria (apenas do hospital do usuário)]
-# [ENTRADA: public_id - UUID público da categoria, category_data - dados de atualização, hospital_id - ID do hospital (automático), db - sessão do banco]
+# [Endpoint PUT para atualizar uma categoria]
+# [ENTRADA: public_id - UUID público da categoria, category_data - dados de atualização, context - contexto de hospital, db - sessão do banco]
 # [SAIDA: CategoryResponse - categoria atualizada ou exceção]
-# [DEPENDENCIAS: CategoryService, require_hospital]
+# [DEPENDENCIAS: CategoryService, require_role_and_hospital, HospitalContext]
 @router.put("/{public_id}", response_model=CategoryResponse)
 def update_category(
     public_id: UUID,
     category_data: CategoryUpdate,
-    hospital_id: int = Depends(require_hospital),
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
     db: Session = Depends(get_db)
 ):
     category_service = CategoryService(db)
-    return category_service.update_category(public_id, category_data, hospital_id)
+    return category_service.update_category(public_id, category_data, context.hospital_id)
 
 
 # [DELETE CATEGORY]
-# [Endpoint DELETE para remover uma categoria (apenas do hospital do usuário)]
-# [ENTRADA: public_id - UUID público da categoria, hospital_id - ID do hospital (automático), db - sessão do banco]
+# [Endpoint DELETE para remover uma categoria]
+# [ENTRADA: public_id - UUID público da categoria, context - contexto de hospital, db - sessão do banco]
 # [SAIDA: dict - mensagem de sucesso ou exceção]
-# [DEPENDENCIAS: CategoryService, require_hospital]
+# [DEPENDENCIAS: CategoryService, require_role_and_hospital, HospitalContext]
 @router.delete("/{public_id}")
 def delete_category(
     public_id: UUID,
-    hospital_id: int = Depends(require_hospital),
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
     db: Session = Depends(get_db)
 ):
     category_service = CategoryService(db)
-    category_service.delete_category(public_id, hospital_id)
+    category_service.delete_category(public_id, context.hospital_id)
     return {"message": "Category deleted successfully"}

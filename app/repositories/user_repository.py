@@ -10,7 +10,7 @@ from uuid import UUID
 # [SAIDA: instância UserRepository configurada]
 # [DEPENDENCIAS: Session]
 class UserRepository:
-    
+
     # [INIT]
     # [Construtor que inicializa o repository com uma sessão do banco]
     # [ENTRADA: db - sessão do banco SQLAlchemy]
@@ -18,6 +18,7 @@ class UserRepository:
     # [DEPENDENCIAS: nenhuma]
     def __init__(self, db: Session):
         self.db = db
+        self.model = User
 
     # [CREATE USER]
     # [Cria um novo usuário no banco com senha hasheada e carrega todos os relacionamentos]
@@ -182,3 +183,48 @@ class UserRepository:
     def delete(self, user: User) -> None:
         self.db.delete(user)
         self.db.commit()
+
+    # [GET ALL FILTERED]
+    # [Busca usuários com filtro opcional de hospital - None retorna todos]
+    # [ENTRADA: hospital_id - ID do hospital (None = todos), skip - registros a pular, limit - limite]
+    # [SAIDA: list[User] - lista de usuários filtrados]
+    # [DEPENDENCIAS: self.db, User, joinedload]
+    def get_all_filtered(self, hospital_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> list[User]:
+        query = self.db.query(User).options(
+            joinedload(User.role),
+            joinedload(User.job_title),
+            joinedload(User.hospital)
+        )
+        if hospital_id is not None:
+            query = query.filter(User.hospital_id == hospital_id)
+        return query.offset(skip).limit(limit).all()
+
+    # [GET BY ROLE FILTERED]
+    # [Busca usuários por role com filtro opcional de hospital]
+    # [ENTRADA: role_id - ID da role, hospital_id - ID do hospital (None = todos), skip - registros a pular, limit - limite]
+    # [SAIDA: list[User] - lista de usuários filtrados]
+    # [DEPENDENCIAS: self.db, User, joinedload]
+    def get_by_role_filtered(self, role_id: int, hospital_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> list[User]:
+        query = self.db.query(User).options(
+            joinedload(User.role),
+            joinedload(User.job_title),
+            joinedload(User.hospital)
+        ).filter(User.role_id == role_id)
+        if hospital_id is not None:
+            query = query.filter(User.hospital_id == hospital_id)
+        return query.offset(skip).limit(limit).all()
+
+    # [GET BY JOB TITLE FILTERED]
+    # [Busca usuários por cargo com filtro opcional de hospital]
+    # [ENTRADA: job_title_id - ID do cargo, hospital_id - ID do hospital (None = todos), skip - registros a pular, limit - limite]
+    # [SAIDA: list[User] - lista de usuários filtrados]
+    # [DEPENDENCIAS: self.db, User, joinedload]
+    def get_by_job_title_filtered(self, job_title_id: int, hospital_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> list[User]:
+        query = self.db.query(User).options(
+            joinedload(User.role),
+            joinedload(User.job_title),
+            joinedload(User.hospital)
+        ).filter(User.job_title_id == job_title_id)
+        if hospital_id is not None:
+            query = query.filter(User.hospital_id == hospital_id)
+        return query.offset(skip).limit(limit).all()

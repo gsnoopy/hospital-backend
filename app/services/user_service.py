@@ -147,10 +147,10 @@ class UserService:
 
     # [GET USERS BY ROLE]
     # [Busca usuários por role com paginação usando UUID público]
-    # [ENTRADA: role_public_id - UUID público da role, pagination - parâmetros de paginação]
+    # [ENTRADA: role_public_id - UUID público da role, pagination - parâmetros de paginação, hospital_id - ID interno do hospital (opcional)]
     # [SAIDA: PaginatedResponse[User] - usuários paginados da role]
     # [DEPENDENCIAS: self.user_repository, self.role_repository, PaginatedResponse]
-    def get_users_by_role(self, role_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[User]:
+    def get_users_by_role(self, role_public_id: UUID, pagination: PaginationParams, hospital_id: Optional[int] = None) -> PaginatedResponse[User]:
         role = self.role_repository.get_by_public_id(role_public_id)
         if not role:
             raise HTTPException(
@@ -161,14 +161,15 @@ class UserService:
                     "status_code": 404
                 }
             )
-        
-        users = self.user_repository.get_by_role_id(
+
+        users = self.user_repository.get_by_role_filtered(
             role_id=role.id,
+            hospital_id=hospital_id,
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
         total = self.user_repository.get_total_count()
-        
+
         return PaginatedResponse.create(
             items=users,
             page=pagination.page,
@@ -178,10 +179,10 @@ class UserService:
 
     # [GET USERS BY JOB TITLE]
     # [Busca usuários por cargo com paginação usando UUID público]
-    # [ENTRADA: job_title_public_id - UUID público do cargo, pagination - parâmetros de paginação]
+    # [ENTRADA: job_title_public_id - UUID público do cargo, pagination - parâmetros de paginação, hospital_id - ID interno do hospital (opcional)]
     # [SAIDA: PaginatedResponse[User] - usuários paginados do cargo]
     # [DEPENDENCIAS: self.user_repository, self.job_title_repository, PaginatedResponse]
-    def get_users_by_job_title(self, job_title_public_id: UUID, pagination: PaginationParams) -> PaginatedResponse[User]:
+    def get_users_by_job_title(self, job_title_public_id: UUID, pagination: PaginationParams, hospital_id: Optional[int] = None) -> PaginatedResponse[User]:
         job_title = self.job_title_repository.get_by_public_id(job_title_public_id)
         if not job_title:
             raise HTTPException(
@@ -192,14 +193,15 @@ class UserService:
                     "status_code": 404
                 }
             )
-        
-        users = self.user_repository.get_by_job_title_id(
+
+        users = self.user_repository.get_by_job_title_filtered(
             job_title_id=job_title.id,
+            hospital_id=hospital_id,
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
         total = self.user_repository.get_total_count()
-        
+
         return PaginatedResponse.create(
             items=users,
             page=pagination.page,
@@ -240,16 +242,17 @@ class UserService:
 
     # [GET PAGINATED USERS]
     # [Busca usuários com paginação criando resposta com metadados]
-    # [ENTRADA: pagination - parâmetros de paginação]
+    # [ENTRADA: pagination - parâmetros de paginação, hospital_id - ID interno do hospital (opcional)]
     # [SAIDA: PaginatedResponse[User] - usuários paginados com metadados]
     # [DEPENDENCIAS: self.user_repository, PaginatedResponse]
-    def get_paginated_users(self, pagination: PaginationParams) -> PaginatedResponse[User]:
-        users = self.user_repository.get_all(
+    def get_paginated_users(self, pagination: PaginationParams, hospital_id: Optional[int] = None) -> PaginatedResponse[User]:
+        users = self.user_repository.get_all_filtered(
+            hospital_id=hospital_id,
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
         total = self.user_repository.get_total_count()
-        
+
         return PaginatedResponse.create(
             items=users,
             page=pagination.page,

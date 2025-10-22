@@ -4,7 +4,8 @@ from app.core.database import get_db
 from app.services.role_service import RoleService
 from app.schemas.role import RoleCreate, RoleUpdate, RoleResponse
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.decorators import require_auth, require_roles
+from app.decorators import require_auth, require_role, require_developer
+from app.core.hospital_context import HospitalContext
 from app.models.user import User
 from uuid import UUID
 
@@ -25,7 +26,7 @@ router = APIRouter(prefix="/roles", tags=["roles"])
 def create_role(
     role: RoleCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("Desenvolvedor"))
+    context: HospitalContext = Depends(require_developer())
 ):
     role_service = RoleService(db)
     return role_service.create_role(role)

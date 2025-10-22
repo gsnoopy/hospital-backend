@@ -4,7 +4,8 @@ from app.core.database import get_db
 from app.services.hospital_service import HospitalService
 from app.schemas.hospital import HospitalCreate, HospitalUpdate, HospitalResponse
 from app.schemas.pagination import PaginatedResponse, PaginationParams
-from app.decorators import require_auth, require_roles
+from app.decorators import require_developer
+from app.core.hospital_context import HospitalContext
 from app.models.user import User
 from uuid import UUID
 
@@ -23,9 +24,9 @@ router = APIRouter(prefix="/hospitals", tags=["hospitals"])
 # [DEPENDENCIAS: HospitalService, ValidationException, HTTPException, status, require_auth]
 @router.post("/", response_model=HospitalResponse, status_code=status.HTTP_201_CREATED)
 def create_hospital(
-    hospital_data: HospitalCreate, 
+    hospital_data: HospitalCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     hospital_service = HospitalService(db)
     return hospital_service.create_hospital(hospital_data)
@@ -41,7 +42,7 @@ def get_hospitals(
     page: int = 1,
     size: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     pagination = PaginationParams(page=page, size=size)
     hospital_service = HospitalService(db)
@@ -57,7 +58,7 @@ def get_hospitals(
 def get_hospital(
     public_id: UUID, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     hospital_service = HospitalService(db)
     hospital = hospital_service.get_hospital_by_public_id(public_id)
@@ -80,7 +81,7 @@ def get_hospital(
 def get_hospital_by_name(
     name: str, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     hospital_service = HospitalService(db)
     hospital = hospital_service.get_hospital_by_name(name)
@@ -93,9 +94,6 @@ def get_hospital_by_name(
     
     return hospital
 
-
-
-
 # [GET HOSPITALS BY CITY]
 # [Endpoint GET para buscar hospitais por cidade - requer autenticação]
 # [ENTRADA: city - cidade dos hospitais, page - número da página, size - itens por página, db - sessão do banco, current_user - usuário autenticado]
@@ -107,7 +105,7 @@ def get_hospitals_by_city(
     page: int = 1,
     size: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     pagination = PaginationParams(page=page, size=size)
     hospital_service = HospitalService(db)
@@ -125,7 +123,7 @@ def get_hospitals_by_nationality(
     page: int = 1,
     size: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     pagination = PaginationParams(page=page, size=size)
     hospital_service = HospitalService(db)
@@ -142,7 +140,7 @@ def update_hospital(
     public_id: UUID,
     hospital_data: HospitalUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     hospital_service = HospitalService(db)
     hospital = hospital_service.update_hospital(public_id, hospital_data)
@@ -165,7 +163,7 @@ def update_hospital(
 def delete_hospital(
     public_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
+    context: HospitalContext = Depends(require_developer())
 ):
     hospital_service = HospitalService(db)
     success = hospital_service.delete_hospital(public_id)
