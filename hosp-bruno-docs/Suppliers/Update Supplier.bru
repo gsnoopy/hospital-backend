@@ -1,0 +1,25 @@
+meta {
+  name: Update Supplier
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://127.0.0.1:8000/suppliers/019a2dbd-bfff-7fb0-a3f0-fd7771f322de
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Fornecedora XYZ Atualizada Ltda",
+    "email": "novoemail@fornecedoraxyz.com.br",
+    "phone": "(11) 91234-5678"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

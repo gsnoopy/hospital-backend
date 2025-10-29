@@ -1,0 +1,26 @@
+meta {
+  name: Supplier
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/suppliers/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Fornecedora XYZ Ltda",
+    "document_type": "CNPJ",
+    "document": "12.345.678/0001-90",
+    "email": "contato@fornecedoraxyz.com.br",
+    "phone": "(11) 98765-4321"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

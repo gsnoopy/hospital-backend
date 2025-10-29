@@ -31,3 +31,5 @@ class Hospital(Base):
     categories = relationship("Category", back_populates="hospital", cascade="all, delete-orphan", lazy="noload")
     subcategories = relationship("SubCategory", back_populates="hospital", cascade="all, delete-orphan", lazy="noload")
     items = relationship("Item", back_populates="hospital", lazy="noload")
+    suppliers = relationship("Supplier", back_populates="hospital", lazy="noload")
+    public_acquisitions = relationship("PublicAcquisition", back_populates="hospital", lazy="noload")

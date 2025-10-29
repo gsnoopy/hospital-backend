@@ -1,0 +1,23 @@
+meta {
+  name: Public Acquisitions by Code
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:8000/public-acquisitions/?search=LIC-2025&search_by=code&page=1&size=10
+  body: none
+  auth: inherit
+}
+
+params:query {
+  search: LIC-2025
+  search_by: code
+  page: 1
+  size: 10
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

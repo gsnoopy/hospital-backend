@@ -1,0 +1,23 @@
+meta {
+  name: Public Acquisition
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/public-acquisitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "code": "LIC-2025-001",
+    "title": "Aquisição de equipamentos médicos hospitalares para UTI"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Update Public Acquisition
+  type: http
+  seq: 6
+}
+
+put {
+  url: http://127.0.0.1:8000/public-acquisitions/019a2dcb-c64c-7572-8ada-90e7239e2bb3
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Aquisição de equipamentos médicos hospitalares para UTI e Centro Cirúrgico"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

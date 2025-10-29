@@ -13,6 +13,8 @@ Este documento descreve todas as validações implementadas no backend para cada
 5. [SubCategory](#subcategory)
 6. [Catalog](#catalog)
 7. [Item](#item)
+8. [Supplier](#supplier)
+9. [Public Acquisition](#public-acquisition)
 
 ---
 
@@ -416,6 +418,125 @@ Este documento descreve todas as validações implementadas no backend para cada
 
 ---
 
+## 🏭 Supplier
+
+### Campo: `name`
+- **Obrigatório**: Sim
+- **Tipo**: String
+- **Regras**:
+  - Mínimo: 2 caracteres
+  - Máximo: 200 caracteres
+  - Caracteres permitidos: Letras (a-z, A-Z, À-ÿ), números (0-9), espaços, `-`, `&`, `(`, `)`, `.`, `,`, `/`
+- **Mensagens de erro**:
+  - `"Supplier name must be at least 2 characters long"`
+  - `"Supplier name must be less than 200 characters"`
+  - `"Supplier name contains invalid characters"`
+
+### Campo: `document_type`
+- **Obrigatório**: Sim
+- **Tipo**: String (Enum)
+- **Valores aceitos**:
+  - `CPF` - Brasil (Cadastro de Pessoa Física)
+  - `CNPJ` - Brasil (Cadastro Nacional da Pessoa Jurídica)
+  - `DNI` - Argentina (Documento Nacional de Identidad)
+  - `CUIT` - Argentina (Clave Única de Identificación Tributaria)
+  - `CUIL` - Argentina (Código Único de Identificación Laboral)
+  - `CI` - Paraguai (Cédula de Identidad)
+  - `RUC` - Paraguai (Registro Único del Contribuyente)
+- **Mensagem de erro**:
+  - `"Document type must be one of: CPF, CNPJ, DNI, CUIT, CUIL, CI, RUC"`
+
+### Campo: `document`
+- **Obrigatório**: Sim
+- **Tipo**: String
+- **Regras específicas por tipo**:
+
+  **CPF** (Brasil - Pessoa Física):
+  - Exatamente 11 dígitos (após remover caracteres especiais)
+  - Formato aceito: `XXX.XXX.XXX-XX` ou apenas números
+
+  **CNPJ** (Brasil - Pessoa Jurídica):
+  - Exatamente 14 dígitos (após remover caracteres especiais)
+  - Formato aceito: `XX.XXX.XXX/XXXX-XX` ou apenas números
+
+  **DNI** (Argentina - Pessoa Física):
+  - Entre 7 e 8 dígitos (após remover caracteres especiais)
+
+  **CUIT** (Argentina - Pessoa Jurídica):
+  - Exatamente 11 dígitos (após remover caracteres especiais)
+  - Formato aceito: `XX-XXXXXXXX-X` ou apenas números
+
+  **CUIL** (Argentina - Pessoa Física):
+  - Exatamente 11 dígitos (após remover caracteres especiais)
+  - Formato aceito: `XX-XXXXXXXX-X` ou apenas números
+
+  **CI** (Paraguai - Pessoa Física):
+  - Entre 6 e 8 dígitos (após remover caracteres especiais)
+
+  **RUC** (Paraguai - Pessoa Jurídica):
+  - Entre 6 e 9 dígitos (após remover caracteres especiais)
+
+- **Mensagens de erro**:
+  - `"Document is required"`
+  - `"CPF must have 11 digits"`
+  - `"CNPJ must have 14 digits"`
+  - `"DNI must have 7 or 8 digits"`
+  - `"CUIT must have 11 digits"`
+  - `"CUIL must have 11 digits"`
+  - `"CI must have 6 to 8 digits"`
+  - `"RUC must have 6 to 9 digits"`
+
+### Campo: `email`
+- **Obrigatório**: Sim
+- **Tipo**: Email
+- **Regras**:
+  - Máximo: 255 caracteres
+  - Deve ser um email válido (formato: `usuario@dominio.com`)
+- **Mensagens de erro**:
+  - `"Email is required"`
+  - `"Invalid email format"`
+  - `"Email must be less than 255 characters"`
+
+### Campo: `phone`
+- **Obrigatório**: Sim
+- **Tipo**: String
+- **Regras**:
+  - Entre 10 e 11 dígitos (após remover caracteres especiais)
+  - Aceita celular ou fixo com DDD
+- **Mensagens de erro**:
+  - `"Phone is required"`
+  - `"Phone must have 10 or 11 digits"`
+
+---
+
+## 📋 Public Acquisition
+
+### Campo: `code`
+- **Obrigatório**: Sim
+- **Tipo**: String
+- **Regras**:
+  - Mínimo: 2 caracteres
+  - Máximo: 100 caracteres
+  - Caracteres permitidos: Letras (a-z, A-Z), números (0-9), espaços, `-`, `/`, `_`
+- **Mensagens de erro**:
+  - `"Public acquisition code must be at least 2 characters long"`
+  - `"Public acquisition code must be less than 100 characters"`
+  - `"Public acquisition code contains invalid characters"`
+
+### Campo: `title`
+- **Obrigatório**: Sim
+- **Tipo**: String
+- **Regras**:
+  - Mínimo: 5 caracteres
+  - Máximo: 500 caracteres
+  - Caracteres permitidos: Letras (a-z, A-Z, À-ÿ), números (0-9), espaços, `-`, `&`, `(`, `)`, `.`, `,`, `/`, `:`, `;`, `+`, `#`, `@`
+- **Mensagens de erro**:
+  - `"Public acquisition title must be at least 5 characters long"`
+  - `"Public acquisition title must be less than 500 characters"`
+  - `"Public acquisition title contains invalid characters"`
+
+---
+
 ## 🔄 Validações Adicionais (Service Layer)
 
 Além das validações de formato, o backend também verifica **regras de negócio** na camada de serviço:
@@ -448,6 +569,13 @@ As seguintes entidades verificam se já existe um registro com o mesmo valor:
 
 **Item**:
 - `internal_code`: Código interno único (se fornecido)
+
+**Supplier**:
+- `document`: Documento único dentro do hospital
+- `email`: Email único dentro do hospital
+
+**Public Acquisition**:
+- `code`: Código único dentro do hospital
 
 ### Existência de Relacionamentos
 
