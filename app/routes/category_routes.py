@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.hospital_context import HospitalContext
 from app.services.category_service import CategoryService
-from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
+from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse, CategoryWithSubcategoriesResponse
 from app.schemas.pagination import PaginatedResponse, PaginationParams
 from app.decorators import require_role
 from uuid import UUID
@@ -47,6 +47,23 @@ def get_categories(
     pagination = PaginationParams(page=page, size=size)
     category_service = CategoryService(db)
     return category_service.get_paginated_categories(pagination, context.hospital_id)
+
+
+# [GET CATEGORIES WITH SUBCATEGORIES]
+# [Endpoint GET para listar categorias com subcategorias aninhadas]
+# [ENTRADA: page - número da página, size - itens por página, context - contexto de hospital, db - sessão do banco]
+# [SAIDA: PaginatedResponse[CategoryWithSubcategoriesResponse] - lista paginada de categorias com subcategorias]
+# [DEPENDENCIAS: PaginationParams, CategoryService, require_role_and_hospital, HospitalContext]
+@router.get("/with-subcategories", response_model=PaginatedResponse[CategoryWithSubcategoriesResponse])
+def get_categories_with_subcategories(
+    page: int = 1,
+    size: int = 10,
+    context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
+    db: Session = Depends(get_db)
+):
+    pagination = PaginationParams(page=page, size=size)
+    category_service = CategoryService(db)
+    return category_service.get_paginated_categories_with_subcategories(pagination, context.hospital_id)
 
 
 # [GET CATEGORY]

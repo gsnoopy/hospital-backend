@@ -108,6 +108,26 @@ class CategoryService:
             total=total
         )
 
+    # [GET PAGINATED CATEGORIES WITH SUBCATEGORIES]
+    # [Busca categorias com subcategorias aninhadas com paginação]
+    # [ENTRADA: pagination - parâmetros de paginação, hospital_id - ID interno do hospital]
+    # [SAIDA: PaginatedResponse[Category] - categorias paginadas com subcategorias]
+    # [DEPENDENCIAS: self.category_repository, PaginatedResponse]
+    def get_paginated_categories_with_subcategories(self, pagination: PaginationParams, hospital_id: int) -> PaginatedResponse[Category]:
+        categories = self.category_repository.get_all_with_subcategories(
+            hospital_id=hospital_id,
+            skip=pagination.get_offset(),
+            limit=pagination.get_limit()
+        )
+        total = self.category_repository.get_total_count(hospital_id)
+
+        return PaginatedResponse.create(
+            items=categories,
+            page=pagination.page,
+            size=pagination.size,
+            total=total
+        )
+
     # [UPDATE CATEGORY]
     # [Atualiza uma categoria existente]
     # [ENTRADA: public_id - UUID público da categoria, category_data - dados de atualização, hospital_id - ID interno do hospital]

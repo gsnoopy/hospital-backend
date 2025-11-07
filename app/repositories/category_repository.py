@@ -76,6 +76,17 @@ class CategoryRepository:
             joinedload(Category.hospital)
         ).filter(Category.hospital_id == hospital_id).offset(skip).limit(limit).all()
 
+    # [GET ALL WITH SUBCATEGORIES]
+    # [Busca todas as categorias de um hospital com suas subcategorias aninhadas]
+    # [ENTRADA: hospital_id - ID interno do hospital, skip - registros a pular, limit - limite]
+    # [SAIDA: List[Category] - lista de categorias do hospital com subcategorias]
+    # [DEPENDENCIAS: Category, self.db, joinedload]
+    def get_all_with_subcategories(self, hospital_id: int, skip: int = 0, limit: int = 100) -> List[Category]:
+        return self.db.query(Category).options(
+            joinedload(Category.hospital),
+            joinedload(Category.subcategories)
+        ).filter(Category.hospital_id == hospital_id).offset(skip).limit(limit).all()
+
     # [GET TOTAL COUNT]
     # [Conta total de categorias de um hospital]
     # [ENTRADA: hospital_id - ID interno do hospital]
