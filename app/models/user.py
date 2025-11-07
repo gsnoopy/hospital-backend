@@ -30,3 +30,4 @@ class User(Base):
     role = relationship("Role", back_populates="users")
     job_title = relationship("JobTitle", back_populates="users")
     hospital = relationship("Hospital", back_populates="users")
+    public_acquisitions = relationship("PublicAcquisition", back_populates="user")

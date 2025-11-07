@@ -33,4 +33,4 @@ class Item(Base):
 
     subcategory = relationship("SubCategory", back_populates="items", lazy="joined")
     hospital = relationship("Hospital", back_populates="items", lazy="joined")
-    
+    item_public_acquisitions = relationship("ItemPublicAcquisition", back_populates="item")

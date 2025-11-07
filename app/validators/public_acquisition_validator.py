@@ -20,6 +20,7 @@ class PublicAcquisitionValidator(BaseValidator):
 
         self._validate_code(data.code, result)
         self._validate_title(data.title, result)
+        self._validate_year(data.year, result)
 
         return result
 
@@ -54,3 +55,12 @@ class PublicAcquisitionValidator(BaseValidator):
         # Título deve conter caracteres alfanuméricos e pontuação comum
         if not re.match(r"^[a-zA-ZÀ-ÿ0-9\s\-\&\(\)\.\,\/\:\;\+\#\@]+$", title):
             result.add_error("Public acquisition title contains invalid characters", "title")
+
+    # [VALIDATE YEAR]
+    # [Valida ano da licitação - deve ser um ano válido]
+    # [ENTRADA: year - ano a ser validado, result - ValidationResult para adicionar erros]
+    # [SAIDA: None - adiciona erros ao result se encontrados]
+    # [DEPENDENCIAS: ValidationResult.add_error]
+    def _validate_year(self, year: int, result: ValidationResult):
+        if year < 1900 or year > 2100:
+            result.add_error("Public acquisition year must be between 1900 and 2100", "year")

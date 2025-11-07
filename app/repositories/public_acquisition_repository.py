@@ -22,14 +22,16 @@ class PublicAcquisitionRepository:
 
     # [CREATE PUBLIC ACQUISITION]
     # [Cria uma nova licitação pública no banco de dados]
-    # [ENTRADA: public_acquisition_data - dados da licitação via schema, hospital_internal_id - ID interno do hospital]
+    # [ENTRADA: public_acquisition_data - dados da licitação via schema, hospital_internal_id - ID interno do hospital, user_internal_id - ID interno do usuário Pregoeiro]
     # [SAIDA: PublicAcquisition - instância da licitação criada]
     # [DEPENDENCIAS: PublicAcquisition, self.db]
-    def create(self, public_acquisition_data: PublicAcquisitionCreate, hospital_internal_id: int) -> PublicAcquisition:
+    def create(self, public_acquisition_data: PublicAcquisitionCreate, hospital_internal_id: int, user_internal_id: int) -> PublicAcquisition:
         db_public_acquisition = PublicAcquisition(
             code=public_acquisition_data.code,
             title=public_acquisition_data.title,
+            year=public_acquisition_data.year,
             hospital_id=hospital_internal_id,
+            user_id=user_internal_id,
         )
         self.db.add(db_public_acquisition)
         self.db.commit()

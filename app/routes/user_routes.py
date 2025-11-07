@@ -177,6 +177,33 @@ def get_users_by_hospital(
     return user_service.get_users_by_hospital(hospital_public_id, pagination)
 
 
+# [GET PREGOEIROS]
+# [Endpoint GET para buscar usuários com role Pregoeiro - Desenvolvedor vê todos, outros veem apenas do próprio hospital]
+# [ENTRADA: page - número da página, size - itens por página, context - contexto de hospital, db - sessão do banco]
+# [SAIDA: PaginatedResponse[UserResponse] - lista paginada de Pregoeiros]
+# [DEPENDENCIAS: UserService, PaginationParams, require_role, HospitalContext]
+@router.get("/pregoeiros/list", response_model=PaginatedResponse[UserResponse])
+def get_pregoeiros(
+    page: int = 1,
+    size: int = 10,
+    context: HospitalContext = Depends(require_role(["Desenvolvedor", "Administrador", "Gerente"])),
+    db: Session = Depends(get_db)
+):
+    from app.repositories.role_repository import RoleRepository
+    role_repo = RoleRepository(db)
+    pregoeiro_role = role_repo.get_by_name("Pregoeiro")
+
+    if not pregoeiro_role:
+        raise HTTPException(
+            status_code=404,
+            detail="Pregoeiro role not found"
+        )
+
+    pagination = PaginationParams(page=page, size=size)
+    user_service = UserService(db)
+    return user_service.get_users_by_role(pregoeiro_role.public_id, pagination, context.hospital_id)
+
+
 # [UPDATE USER]
 # [Endpoint PUT para atualizar um usuário - requer Desenvolvedor ou Administrador]
 # [ENTRADA: public_id - UUID público do usuário, user_data - dados de atualização, context - contexto de hospital, db - sessão do banco]

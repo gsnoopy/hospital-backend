@@ -26,3 +26,4 @@ class Supplier(Base):
     hospital_id = Column(Integer, ForeignKey("hospitals.id", ondelete="RESTRICT"), nullable=False, index=True)
 
     hospital = relationship("Hospital", back_populates="suppliers", lazy="joined")
+    item_public_acquisitions = relationship("ItemPublicAcquisition", back_populates="supplier")

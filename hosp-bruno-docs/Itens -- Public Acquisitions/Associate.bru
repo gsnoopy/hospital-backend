@@ -1,0 +1,26 @@
+meta {
+  name: Associate
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/item-public-acquisitions/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "item_id": "019a12c3-ef03-7452-b71d-c323c35d9c3d",
+    "public_acquisition_id": "019a5c30-6b89-7ae2-878f-68d81f40a390",
+    "supplier_id": "019a324b-806a-7a42-8f5a-2d73d1867846",
+    "is_holder": true
+  
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

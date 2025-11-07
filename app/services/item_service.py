@@ -191,6 +191,27 @@ class ItemService:
             total=total
         )
 
+    # [SEARCH ITEMS UNIFIED]
+    # [Busca unificada por name OU similar_names com paginação]
+    # [ENTRADA: search_term - termo de busca, pagination - parâmetros de paginação, hospital_id - ID interno do hospital]
+    # [SAIDA: PaginatedResponse[Item] - itens encontrados paginados]
+    # [DEPENDENCIAS: self.item_repository, PaginatedResponse]
+    def search_items_unified(self, search_term: str, pagination: PaginationParams, hospital_id: int) -> PaginatedResponse[Item]:
+        items = self.item_repository.search_unified(
+            search_term=search_term,
+            hospital_id=hospital_id,
+            skip=pagination.get_offset(),
+            limit=pagination.get_limit()
+        )
+        total = self.item_repository.get_unified_search_count(search_term, hospital_id)
+
+        return PaginatedResponse.create(
+            items=items,
+            page=pagination.page,
+            size=pagination.size,
+            total=total
+        )
+
     # [UPDATE ITEM]
     # [Atualiza um item existente]
     # [ENTRADA: public_id - UUID público do item, item_data - dados de atualização, hospital_id - ID interno do hospital]

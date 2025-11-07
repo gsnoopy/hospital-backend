@@ -12,6 +12,7 @@ from app.routes.catalog_routes import router as catalog_router
 from app.routes.item_routes import router as item_router
 from app.routes.supplier_routes import router as supplier_router
 from app.routes.public_acquisition_routes import router as public_acquisition_router
+from app.routes.item_public_acquisition_routes import router as item_public_acquisition_router
 from app.core.database import engine, Base
 from app.security import rate_limiter
 from app.core.config import settings
@@ -91,6 +92,7 @@ app.include_router(catalog_router)
 app.include_router(item_router)
 app.include_router(supplier_router)
 app.include_router(public_acquisition_router)
+app.include_router(item_public_acquisition_router)
 
 # [READ ROOT]
 # [Endpoint GET raiz que retorna mensagem de status da API]

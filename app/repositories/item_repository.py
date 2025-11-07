@@ -150,6 +150,34 @@ class ItemRepository:
             Item.hospital_id == hospital_id
         ).count()
 
+    # [SEARCH UNIFIED]
+    # [Busca unificada em name E similar_names usando OR]
+    # [ENTRADA: search_term - termo de busca, hospital_id - ID interno do hospital, skip - registros a pular, limit - limite]
+    # [SAIDA: List[Item] - lista de itens encontrados em name OU similar_names]
+    # [DEPENDENCIAS: Item, self.db, or_, func]
+    def search_unified(self, search_term: str, hospital_id: int, skip: int = 0, limit: int = 100) -> List[Item]:
+        return self.db.query(Item).filter(
+            or_(
+                Item.name.ilike(f"%{search_term}%"),
+                func.array_to_string(Item.similar_names, ' ').ilike(f"%{search_term}%")
+            ),
+            Item.hospital_id == hospital_id
+        ).offset(skip).limit(limit).all()
+
+    # [GET UNIFIED SEARCH COUNT]
+    # [Conta total de itens encontrados em name OU similar_names]
+    # [ENTRADA: search_term - termo de busca, hospital_id - ID interno do hospital]
+    # [SAIDA: int - número total de itens encontrados]
+    # [DEPENDENCIAS: Item, self.db, or_, func]
+    def get_unified_search_count(self, search_term: str, hospital_id: int) -> int:
+        return self.db.query(Item).filter(
+            or_(
+                Item.name.ilike(f"%{search_term}%"),
+                func.array_to_string(Item.similar_names, ' ').ilike(f"%{search_term}%")
+            ),
+            Item.hospital_id == hospital_id
+        ).count()
+
     # [UPDATE ITEM]
     # [Atualiza um item existente]
     # [ENTRADA: item - instância do item, item_data - novos dados, subcategory_internal_id - ID interno da subcategoria]

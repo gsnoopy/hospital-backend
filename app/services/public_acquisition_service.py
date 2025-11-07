@@ -30,6 +30,8 @@ class PublicAcquisitionService:
     # [SAIDA: PublicAcquisition - licitação criada ou exceções de validação/duplicata]
     # [DEPENDENCIAS: self.public_acquisition_validator, self.public_acquisition_repository]
     def create_public_acquisition(self, public_acquisition_data: PublicAcquisitionCreate, hospital_id: int) -> PublicAcquisition:
+        from app.repositories.user_repository import UserRepository
+
         validation_result = self.public_acquisition_validator.validate(public_acquisition_data)
         if not validation_result.is_valid:
             errors = validation_result.get_errors_by_field()
@@ -47,6 +49,40 @@ class PublicAcquisitionService:
                 }
             )
 
+        # Validate that user exists and is a Pregoeiro in the same hospital
+        user_repo = UserRepository(self.public_acquisition_repository.db)
+        user = user_repo.get_by_public_id(public_acquisition_data.user_id)
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": True,
+                    "message": f"User with ID '{public_acquisition_data.user_id}' not found",
+                    "status_code": 404
+                }
+            )
+
+        if user.role.name != "Pregoeiro":
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": "Only users with role 'Pregoeiro' can be associated with public acquisitions",
+                    "status_code": 422
+                }
+            )
+
+        if user.hospital_id != hospital_id:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": True,
+                    "message": "User must belong to the same hospital as the public acquisition",
+                    "status_code": 422
+                }
+            )
+
         # Check if code is unique within the hospital
         if self.public_acquisition_repository.get_by_code(public_acquisition_data.code, hospital_id):
             raise HTTPException(
@@ -58,7 +94,7 @@ class PublicAcquisitionService:
                 }
             )
 
-        public_acquisition = self.public_acquisition_repository.create(public_acquisition_data, hospital_id)
+        public_acquisition = self.public_acquisition_repository.create(public_acquisition_data, hospital_id, user.id)
         return public_acquisition
 
     # [GET PUBLIC ACQUISITION BY PUBLIC ID]
@@ -147,6 +183,8 @@ class PublicAcquisitionService:
     # [SAIDA: PublicAcquisition - licitação atualizada ou exceção se não encontrada]
     # [DEPENDENCIAS: self.public_acquisition_repository]
     def update_public_acquisition(self, public_id: UUID, public_acquisition_data: PublicAcquisitionUpdate, hospital_id: int) -> PublicAcquisition:
+        from app.repositories.user_repository import UserRepository
+
         public_acquisition = self.public_acquisition_repository.get_by_public_id(public_id, hospital_id)
         if not public_acquisition:
             raise HTTPException(
@@ -157,6 +195,41 @@ class PublicAcquisitionService:
                     "status_code": 404
                 }
             )
+
+        # Validate user if being updated
+        if public_acquisition_data.user_id:
+            user_repo = UserRepository(self.public_acquisition_repository.db)
+            user = user_repo.get_by_public_id(public_acquisition_data.user_id)
+
+            if not user:
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "error": True,
+                        "message": f"User with ID '{public_acquisition_data.user_id}' not found",
+                        "status_code": 404
+                    }
+                )
+
+            if user.role.name != "Pregoeiro":
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": True,
+                        "message": "Only users with role 'Pregoeiro' can be associated with public acquisitions",
+                        "status_code": 422
+                    }
+                )
+
+            if user.hospital_id != hospital_id:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": True,
+                        "message": "User must belong to the same hospital as the public acquisition",
+                        "status_code": 422
+                    }
+                )
 
         # Check for conflicts if code is being updated
         if public_acquisition_data.code and public_acquisition_data.code != public_acquisition.code:

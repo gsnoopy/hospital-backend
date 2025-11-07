@@ -6,5 +6,20 @@ from .categories import Category
 from .subcategories import SubCategory
 from .items import Item
 from .catalog import Catalog
+from .supplier import Supplier
+from .public_acquisition import PublicAcquisition
+from .item_public_acquisition import ItemPublicAcquisition
 
-__all__ = ["User", "Role", "Hospital", "JobTitle", "Category", "SubCategory", "Item", "Catalog"]
+__all__ = [
+    "User",
+    "Role",
+    "Hospital",
+    "JobTitle",
+    "Category",
+    "SubCategory",
+    "Item",
+    "Catalog",
+    "Supplier",
+    "PublicAcquisition",
+    "ItemPublicAcquisition"
+]

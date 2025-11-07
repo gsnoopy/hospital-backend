@@ -1,0 +1,23 @@
+meta {
+  name: Disassociate
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://127.0.0.1:8000/item-public-acquisitions/019a5c79-90e7-7072-989e-2274c68fdb8f
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "supplier_id": "019a324b-806a-7a42-8f5a-2d73d1867846",
+    "is_holder": false
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

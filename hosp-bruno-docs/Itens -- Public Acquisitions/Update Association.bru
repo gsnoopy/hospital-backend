@@ -1,0 +1,23 @@
+meta {
+  name: Update Association
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://127.0.0.1:8000/item-public-acquisitions/{id}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "supplier_id": "019a324b-806a-7a42-8f5a-2d73d1867846",
+    "is_holder": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

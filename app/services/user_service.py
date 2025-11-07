@@ -168,7 +168,7 @@ class UserService:
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
-        total = self.user_repository.get_total_count()
+        total = self.user_repository.get_by_role_filtered_count(role.id, hospital_id)
 
         return PaginatedResponse.create(
             items=users,
@@ -200,7 +200,7 @@ class UserService:
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
-        total = self.user_repository.get_total_count()
+        total = self.user_repository.get_by_job_title_filtered_count(job_title.id, hospital_id)
 
         return PaginatedResponse.create(
             items=users,
@@ -251,7 +251,7 @@ class UserService:
             skip=pagination.get_offset(),
             limit=pagination.get_limit()
         )
-        total = self.user_repository.get_total_count()
+        total = self.user_repository.get_all_filtered_count(hospital_id)
 
         return PaginatedResponse.create(
             items=users,

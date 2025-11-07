@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     test_database_url: str
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 30
+    jwt_access_token_expire_minutes: int
     redis_url: str
     environment: str
     dev_email: str

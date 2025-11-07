@@ -35,12 +35,13 @@ def create_item(
 
 # [GET ITEMS]
 # [Endpoint GET para listar itens - Desenvolvedor vê todos, outros veem apenas do próprio hospital]
-# [ENTRADA: search - termo de busca opcional, page - número da página, size - itens por página, context - contexto de hospital, db - sessão do banco]
+# [ENTRADA: search - termo de busca opcional, search_type - tipo de busca (name, similar_names, unified), page - número da página, size - itens por página, context - contexto de hospital, db - sessão do banco]
 # [SAIDA: PaginatedResponse[ItemResponse] - lista paginada de itens]
 # [DEPENDENCIAS: PaginationParams, ItemService, require_role_and_hospital, HospitalContext]
 @router.get("/", response_model=PaginatedResponse[ItemResponse])
 def get_items(
-    search: Optional[str] = Query(None, description="Search term for item names"),
+    search: Optional[str] = Query(None, description="Search term for item names or similar names"),
+    search_type: Optional[str] = Query("unified", description="Search type: 'name', 'similar_names', or 'unified' (default)"),
     page: int = 1,
     size: int = 10,
     context: HospitalContext = Depends(require_role(["Administrador", "Gerente"])),
@@ -50,7 +51,12 @@ def get_items(
     item_service = ItemService(db)
 
     if search:
-        return item_service.search_items(search, pagination, context.hospital_id)
+        if search_type == "name":
+            return item_service.search_items(search, pagination, context.hospital_id)
+        elif search_type == "similar_names":
+            return item_service.search_items_by_similar_names(search, pagination, context.hospital_id)
+        else:  # unified (default)
+            return item_service.search_items_unified(search, pagination, context.hospital_id)
     else:
         return item_service.get_paginated_items(pagination, context.hospital_id)
 

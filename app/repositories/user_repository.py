@@ -228,3 +228,36 @@ class UserRepository:
         if hospital_id is not None:
             query = query.filter(User.hospital_id == hospital_id)
         return query.offset(skip).limit(limit).all()
+
+    # [GET BY ROLE FILTERED COUNT]
+    # [Conta usuários por role com filtro opcional de hospital]
+    # [ENTRADA: role_id - ID da role, hospital_id - ID do hospital (None = todos)]
+    # [SAIDA: int - total de usuários]
+    # [DEPENDENCIAS: self.db, User]
+    def get_by_role_filtered_count(self, role_id: int, hospital_id: Optional[int] = None) -> int:
+        query = self.db.query(User).filter(User.role_id == role_id)
+        if hospital_id is not None:
+            query = query.filter(User.hospital_id == hospital_id)
+        return query.count()
+
+    # [GET BY JOB TITLE FILTERED COUNT]
+    # [Conta usuários por cargo com filtro opcional de hospital]
+    # [ENTRADA: job_title_id - ID do cargo, hospital_id - ID do hospital (None = todos)]
+    # [SAIDA: int - total de usuários]
+    # [DEPENDENCIAS: self.db, User]
+    def get_by_job_title_filtered_count(self, job_title_id: int, hospital_id: Optional[int] = None) -> int:
+        query = self.db.query(User).filter(User.job_title_id == job_title_id)
+        if hospital_id is not None:
+            query = query.filter(User.hospital_id == hospital_id)
+        return query.count()
+
+    # [GET ALL FILTERED COUNT]
+    # [Conta usuários com filtro opcional de hospital]
+    # [ENTRADA: hospital_id - ID do hospital (None = todos)]
+    # [SAIDA: int - total de usuários]
+    # [DEPENDENCIAS: self.db, User]
+    def get_all_filtered_count(self, hospital_id: Optional[int] = None) -> int:
+        query = self.db.query(User)
+        if hospital_id is not None:
+            query = query.filter(User.hospital_id == hospital_id)
+        return query.count()
